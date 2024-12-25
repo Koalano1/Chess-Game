@@ -28,9 +28,4 @@ public class AuthController {
         return ResponseEntity.ok((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
 
-    @GetMapping("/home")
-    @PreAuthorize("hasRole('USER')")
-    public String home() {
-        return "Hi";
-    }
 }
