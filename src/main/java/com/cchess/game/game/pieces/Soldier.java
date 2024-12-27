@@ -14,6 +14,36 @@ public class Soldier extends Piece {
 
     @Override
     public boolean isValidMove(Board board, Position from, Position to) {
-        return false;
+        int rowFrom = from.getRow();
+        int colFrom = from.getCol();
+        int rowTo = to.getRow();
+        int colTo = to.getCol();
+
+        Piece[][] pieces = board.getBoard();
+        Piece pieceAtTo = pieces[rowTo][colTo];
+
+        // Check nước đi lùi luôn không hợp lệ
+        if (isRed) {
+            if (rowTo > rowFrom)
+                return false;
+        } else {
+            if (rowTo < rowFrom)
+                return false;
+        }
+
+        // Check nước đi chéo không hợp lệ
+        if ((rowFrom != rowTo) && (colFrom != colTo))
+            return false;
+
+        if (isRed) {
+            if ((rowTo == 5 || rowTo == 6) && (rowFrom == rowTo))
+                return false;
+        } else {
+            if ((rowTo == 3 || rowTo == 4) && (rowFrom == rowTo))
+                return false;
+        }
+
+        return (Math.abs(rowFrom - rowTo) == 1 || Math.abs(colFrom - colTo) == 1)
+                && (pieceAtTo == null || pieceAtTo.isRed() != this.isRed);
     }
 }

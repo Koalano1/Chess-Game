@@ -1,8 +1,6 @@
 package com.cchess.game.game;
 
-import com.cchess.game.game.pieces.Chariot;
-import com.cchess.game.game.pieces.Horse;
-import com.cchess.game.game.pieces.Piece;
+import com.cchess.game.game.pieces.*;
 import com.cchess.game.game.utils.BoardUtils;
 import com.cchess.game.game.utils.PieceUtils;
 import lombok.Data;
@@ -61,13 +59,19 @@ public class Board {
 
 //        Piece horse = new Horse(true);
 //        Position horsePosition = new Position(7, 2);
-
-        Piece chariot = new Chariot(true);
-        Position chariotPosition = new Position(9, 0);
+//        Piece cannon = new Cannon(true);
+//        Position cannonPosition = new Position(7, 1);
+//
+//        Piece chariot = new Chariot(true);
+//        Position chariotPosition = new Position(9, 0);
+//        Piece elephant = new Elephant(true);
+//        Position elephantPosition = new Position(6, 5);
+        Piece soldier = new Soldier(true);
+        Position soldierPosition = new Position(8, 1);
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 Position newPosition = new Position(i, j);
-                if (chariot.isValidMove(game, chariotPosition, newPosition))
+                if (soldier.isValidMove(game, soldierPosition, newPosition))
                     System.out.println("New valid position: " + newPosition);
 
             }
