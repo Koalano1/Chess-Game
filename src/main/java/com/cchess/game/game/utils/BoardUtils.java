@@ -20,14 +20,13 @@ public class BoardUtils {
                 int rowIdxInMatrix = Integer.parseInt(String.valueOf(piece.charAt(0)));
                 int colIdxInMatrix = Integer.parseInt(String.valueOf(piece.charAt(1)));
                 char color = piece.charAt(2);
-                String pieceName = piece.substring(3,5);
+                String pieceName = piece.substring(3, 5);
                 if (pieceName.equals("00")) {
                     continue;
                 }
 
                 boolean isRed = (color == 'r');
-                Piece pieceInstance = PieceUtils.getPieceInstanceFromName(pieceName);
-                pieceInstance.setRed(isRed);
+                Piece pieceInstance = PieceUtils.getPieceInstanceFromName(pieceName, isRed);
                 result[rowIdxInMatrix][colIdxInMatrix] = pieceInstance;
             }
         }

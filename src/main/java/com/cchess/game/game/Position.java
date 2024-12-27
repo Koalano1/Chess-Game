@@ -1,15 +1,19 @@
 package com.cchess.game.game;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import javax.xml.stream.events.Characters;
+import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
+@NoArgsConstructor
 public class Position {
-    private int x;
-    private int y;
+    private int row;
+    private int col;
+
+    public Position(int row, int col) {
+        this.row = row;
+        this.col = col;
+    }
+
 
     public static Position getPositionFromString(String position) {
         return new Position(
@@ -20,6 +24,6 @@ public class Position {
 
     @Override
     public String toString() {
-        return "Position{x=" + x + ", y=" + y + "}";
+        return "Position {row=" + row + ", col=" + col + "}";
     }
 }

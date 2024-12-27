@@ -4,35 +4,38 @@ import com.cchess.game.game.Board;
 import com.cchess.game.game.Position;
 
 public class Horse extends Piece {
-    public Horse() {
+    public Horse(boolean isRed) {
         super(
                 PieceSymbol.HORSE.getName(),
-                PieceSymbol.HORSE.getSymbol()
+                PieceSymbol.HORSE.getSymbol(),
+                isRed
         );
     }
 
     @Override
-    boolean isValidMove(Board board, Position from, Position to) {
-        int xFrom = from.getX();
-        int yFrom = from.getY();
-        int xTo = to.getX();
-        int yTo = to.getY();
+    public boolean isValidMove(Board board, Position from, Position to) {
+        int rowFrom = from.getRow();
+        int colFrom = from.getCol();
+        int rowTo = to.getRow();
+        int colTo = to.getCol();
 
         Piece[][] pieces = board.getBoard();
-        if (Math.abs(xFrom - xTo) == 1 && yFrom - yTo == 2
-                && pieces[xFrom][yFrom - 1] == null && pieces[xTo][yTo] == null) {
-            return true;
-        }
-        if (Math.abs(xFrom - yTo) == 1 && yFrom - yTo == -2
-                && pieces[xFrom][yFrom + 1] == null && pieces[xTo][yTo] == null) {
-            return true;
-        }
-        if (Math.abs(yFrom - yTo) == 1 && xFrom - xTo == 2
-                && pieces[xFrom - 1][yFrom] == null && pieces[xTo][yTo] == null) {
-            return true;
-        }
+        
+        boolean cond1 = (colFrom - colTo == 2 && Math.abs(rowFrom - rowTo) == 1
+            && pieces[rowFrom][colFrom - 1] == null && pieces[rowTo][colFrom - 1] == null);
 
-        return Math.abs(yFrom - yTo) == 1 && xFrom - xTo == -2
-                && pieces[xFrom + 1][yFrom] == null && pieces[xTo][yTo] == null;
+        boolean cond2 = (colFrom - colTo == -2 && Math.abs(rowFrom - rowTo) == 1
+            && pieces[rowFrom][colFrom + 1] == null && pieces[rowTo][colFrom + 1] == null);
+
+        boolean cond3 = (Math.abs(colFrom - colTo) == 1 && rowFrom - rowTo == 2
+            && pieces[rowFrom - 1][colFrom] == null && pieces[rowFrom - 1][colTo] == null);
+
+        boolean cond4 = (Math.abs(colFrom - colTo) == 1 && rowFrom - rowTo == -2
+            && pieces[rowFrom + 1][colFrom] == null && pieces[rowFrom + 1][colTo] == null);
+
+        if (!cond1 && !cond2 && !cond3 && !cond4) return false;
+        Piece pieceAtTo = board.getBoard()[rowTo][colTo];
+        if (pieceAtTo == null) return true;
+        return this.isRed != pieceAtTo.isRed();
     }
 }

@@ -1,7 +1,9 @@
 package com.cchess.game.game;
 
+import com.cchess.game.game.pieces.Horse;
 import com.cchess.game.game.pieces.Piece;
 import com.cchess.game.game.utils.BoardUtils;
+import com.cchess.game.game.utils.PieceUtils;
 import lombok.Data;
 
 @Data
@@ -26,6 +28,47 @@ public class Board {
 
     public Board() {
         this.board = BoardUtils.convertBoardToMatrix(defaultBoard);
+    }
+
+    public Board(String board) {
+        this.board = BoardUtils.convertBoardToMatrix(board);
+    }
+
+    public static void main(String[] args) {
+        Board game = new Board();
+        Piece[][] board = game.getBoard();
+
+//        for (int i = 0; i < ROW; i++) {
+//            for (int j = 0; j < COL; j++) {
+//                if (board[i][j] == null)
+//                    System.out.print(" ");
+//                else System.out.print(board[i][j].getSymbol() + " ");
+//            }
+//            System.out.println();
+//        }
+
+//        Piece redGeneral = new General(true);
+//        System.out.println(redGeneral.isValidMove(game, new Position(9, 4), new Position(8, 4)));
+
+//        Piece redGeneral = new General(true);
+//        Piece redHorse = new Horse(true);
+//        Position redGeneralPosition = PieceUtils.getGeneralPosition(game, true);
+//        Position currentPosition = PieceUtils.getGeneralPosition(game, true);
+
+//        Piece leftRedAdvisor = PieceUtils.getPieceInstanceFromName("AD", true);
+//        Position leftRedAdvisorPosition = new Position(8, 4);
+
+        Piece horse = new Horse(true);
+        Position horsePosition = new Position(7, 2);
+
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                Position newPosition = new Position(i, j);
+                if (horse.isValidMove(game, horsePosition, newPosition))
+                    System.out.println("New valid position: " + newPosition);
+
+            }
+        }
     }
 
 }

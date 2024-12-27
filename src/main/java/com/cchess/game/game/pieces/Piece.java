@@ -12,18 +12,17 @@ public abstract class Piece {
 
     protected final String symbol;
 
-    public Piece(String name, String symbol) {
-        this.name = name;
-        this.symbol = symbol;
-    }
-
     protected boolean isRed;
 
-    abstract boolean isValidMove(Board board, Position from, Position to);
+    public Piece(String name, String symbol, boolean isRed) {
+        this.name = name;
+        this.symbol = symbol;
+        this.isRed = isRed;
+    }
+
+    abstract public boolean isValidMove(Board board, Position from, Position to);
 
     public Piece clone(Piece piece) {
-        Piece newPiece = PieceUtils.getPieceInstanceFromName(piece.getName());
-        newPiece.setRed(isRed);
-        return newPiece;
+        return PieceUtils.getPieceInstanceFromName(piece.getName(), isRed);
     }
 }

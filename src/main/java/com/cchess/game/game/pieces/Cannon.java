@@ -5,15 +5,17 @@ import com.cchess.game.game.Position;
 
 public class Cannon extends Piece {
 
-    public Cannon() {
+    public Cannon(boolean isRed) {
         super(
                 PieceSymbol.CANNON.getName(),
-                PieceSymbol.CANNON.getSymbol()
+                PieceSymbol.CANNON.getSymbol(),
+                isRed
         );
     }
 
     @Override
-    boolean isValidMove(Board board, Position from, Position to) {
+    public boolean isValidMove(Board board, Position from, Position to) {
+
         return false;
     }
 }

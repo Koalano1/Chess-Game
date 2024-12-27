@@ -4,15 +4,16 @@ import com.cchess.game.game.Board;
 import com.cchess.game.game.Position;
 
 public class Chariot extends Piece {
-    public Chariot() {
+    public Chariot(boolean isRed) {
         super(
                 PieceSymbol.CHARIOT.getName(),
-                PieceSymbol.CHARIOT.getSymbol()
+                PieceSymbol.CHARIOT.getSymbol(),
+                isRed
         );
     }
 
     @Override
-    boolean isValidMove(Board board, Position from, Position to) {
+    public boolean isValidMove(Board board, Position from, Position to) {
         return false;
     }
 }
