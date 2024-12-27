@@ -1,5 +1,6 @@
 package com.cchess.game.game;
 
+import com.cchess.game.game.pieces.Chariot;
 import com.cchess.game.game.pieces.Horse;
 import com.cchess.game.game.pieces.Piece;
 import com.cchess.game.game.utils.BoardUtils;
@@ -58,13 +59,15 @@ public class Board {
 //        Piece leftRedAdvisor = PieceUtils.getPieceInstanceFromName("AD", true);
 //        Position leftRedAdvisorPosition = new Position(8, 4);
 
-        Piece horse = new Horse(true);
-        Position horsePosition = new Position(7, 2);
+//        Piece horse = new Horse(true);
+//        Position horsePosition = new Position(7, 2);
 
+        Piece chariot = new Chariot(true);
+        Position chariotPosition = new Position(9, 0);
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 Position newPosition = new Position(i, j);
-                if (horse.isValidMove(game, horsePosition, newPosition))
+                if (chariot.isValidMove(game, chariotPosition, newPosition))
                     System.out.println("New valid position: " + newPosition);
 
             }
