@@ -1,6 +1,6 @@
 package com.cchess.game.config;
 
-import com.cchess.game.service.CustomUserDetailsService;
+import com.cchess.game.security.auth.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

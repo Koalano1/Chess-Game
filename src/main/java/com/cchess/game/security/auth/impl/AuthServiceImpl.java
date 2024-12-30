@@ -1,7 +1,7 @@
 package com.cchess.game.security.auth.impl;
 
-import com.cchess.game.dto.request.LoginRequest;
-import com.cchess.game.dto.response.LoginResponse;
+import com.cchess.game.auth.LoginRequest;
+import com.cchess.game.auth.LoginResponse;
 import com.cchess.game.exception.AuthenticationException;
 import com.cchess.game.security.auth.AuthService;
 import com.cchess.game.security.jwt.JwtService;
