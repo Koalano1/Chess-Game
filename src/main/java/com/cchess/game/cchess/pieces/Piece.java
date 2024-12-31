@@ -2,7 +2,6 @@ package com.cchess.game.cchess.pieces;
 
 import com.cchess.game.cchess.base.Board;
 import com.cchess.game.cchess.base.Position;
-import com.cchess.game.util.PieceUtils;
 import lombok.Data;
 
 @Data

@@ -19,7 +19,7 @@ public class Chariot extends Piece {
         int rowTo = to.getRow();
         int colTo = to.getCol();
 
-        Piece pieceAtTo = board.getBoard()[rowTo][colTo];
+        Piece pieceAtTo = board.getArray()[rowTo][colTo];
         int maxRow = Math.max(rowFrom, rowTo);
         int minRow = Math.min(rowFrom, rowTo);
         int maxCol = Math.max(colFrom, colTo);
@@ -27,7 +27,7 @@ public class Chariot extends Piece {
 
         if (rowFrom == rowTo) {
             for (int col = minCol + 1; col <= maxCol - 1; col++) {
-                if (board.getBoard()[rowFrom][col] != null) {
+                if (board.getArray()[rowFrom][col] != null) {
                     return false;
                 }
             }
@@ -38,7 +38,7 @@ public class Chariot extends Piece {
         }
         if (colFrom == colTo) {
             for (int row = minRow + 1; row <= maxRow - 1; row++) {
-                if (board.getBoard()[row][colFrom] != null) {
+                if (board.getArray()[row][colFrom] != null) {
                     return false;
                 }
             }

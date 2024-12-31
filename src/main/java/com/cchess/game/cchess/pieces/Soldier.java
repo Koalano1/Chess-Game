@@ -19,7 +19,7 @@ public class Soldier extends Piece {
         int rowTo = to.getRow();
         int colTo = to.getCol();
 
-        Piece[][] pieces = board.getBoard();
+        Piece[][] pieces = board.getArray();
         Piece pieceAtTo = pieces[rowTo][colTo];
 
         if (isRed) {

@@ -28,7 +28,7 @@ public class Advisor extends Piece {
             return false;
         }
 
-        Piece pieceAtTo = board.getBoard()[rowTo][colTo];
+        Piece pieceAtTo = board.getArray()[rowTo][colTo];
         if (pieceAtTo != null) {
             return pieceAtTo.isRed() != this.isRed;
         }

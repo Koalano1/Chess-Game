@@ -19,7 +19,7 @@ public class Elephant extends Piece {
         int rowTo = to.getRow();
         int colTo = to.getCol();
 
-        Piece[][] pieces = board.getBoard();
+        Piece[][] pieces = board.getArray();
         Piece pieceAtTo = pieces[rowTo][colTo];
 
         return (Math.abs(rowFrom - rowTo) == 2 && Math.abs(colFrom - colTo) == 2)

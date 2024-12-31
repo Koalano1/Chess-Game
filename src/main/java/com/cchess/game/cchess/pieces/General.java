@@ -25,7 +25,7 @@ public class General extends Piece {
             return false;
         }
 
-        Piece pieceAtTo = board.getBoard()[rowTo][colTo];
+        Piece pieceAtTo = board.getArray()[rowTo][colTo];
         Position opponentGeneralPosition = PieceUtils.getGeneralPosition(board, !isRed);
 
         boolean isSameColumn = (colTo == opponentGeneralPosition.getCol());
@@ -46,7 +46,7 @@ public class General extends Piece {
         int lowerRow = Math.min(to.getRow(), opponentGeneral.getRow() + 1);
         int upperRow = Math.max(to.getRow(), opponentGeneral.getRow() + 1);
         for (int r = lowerRow; r <= upperRow; r++) {
-            if (board.getBoard()[r][to.getCol()] != null)
+            if (board.getArray()[r][to.getCol()] != null)
                 return true;
         }
         return false;

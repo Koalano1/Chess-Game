@@ -1,8 +1,6 @@
 package com.cchess.game.cchess.base;
 
-import com.cchess.game.util.BoardUtils;
-import com.cchess.game.cchess.pieces.Piece;
-import com.cchess.game.cchess.pieces.Soldier;
+import com.cchess.game.cchess.pieces.*;
 import lombok.Data;
 
 @Data
@@ -11,31 +9,51 @@ public class Board {
     public static final int ROW = 10;
     public static final int COL = 9;
 
-    private final Piece[][] board;
-
-    private static String defaultBoard =
-            "00bCH_01bHO_02bEL_03bAD_04bGE_05bAD_06bEL_07bHO_08bCH_" +
-            "10000_11000_12000_13000_14000_15000_16000_17000_18000_" +
-            "20000_21bCA_22000_23000_24000_25000_26000_27bCA_28000_" +
-            "30bSO_31000_32bSO_33000_34bSO_35000_36bSO_37000_38bSO_" +
-            "40000_41000_42000_43000_44000_45000_46000_47000_48000_" +
-            "50000_51000_52000_53000_54000_55000_56000_57000_58000_" +
-            "60rSO_61000_62rSO_63000_64rSO_65000_66rSO_67000_68rSO_" +
-            "70000_71rCA_72000_73000_74000_75000_76000_77rCA_78000_" +
-            "80000_81000_82000_83000_84000_85000_86000_87000_88000_" +
-            "90rCH_91rHO_92rEL_93rAD_94rGE_95rAD_96rEL_97rHO_98rCH_";
+    private Piece[][] array = new Piece[ROW][COL];
 
     public Board() {
-        this.board = BoardUtils.toMatrix(defaultBoard);
+        this.initLayout();
     }
 
-    public Board(String board) {
-        this.board = BoardUtils.toMatrix(board);
+    public void initLayout() {
+        array[0][0] = new Chariot(false);
+        array[0][1] = new Horse(false);
+        array[0][2] = new Elephant(false);
+        array[0][3] = new Advisor(false);
+        array[0][4] = new General(false);
+        array[0][5] = new Advisor(false);
+        array[0][6] = new Elephant(false);
+        array[0][7] = new Horse(false);
+        array[0][8] = new Chariot(false);
+
+        array[2][1] = new Cannon(false);
+        array[2][7] = new Cannon(false);
+
+        for (int i = 0; i < 9; i += 2) {
+            array[3][i] = new Soldier(false);
+        }
+
+        for (int i = 0; i < 9; i += 2) {
+            array[6][i] = new Soldier(true);
+        }
+
+        array[7][1] = new Cannon(true);
+        array[7][7] = new Cannon(true);
+
+        array[9][0] = new Chariot(true);
+        array[9][1] = new Horse(true);
+        array[9][2] = new Elephant(true);
+        array[9][3] = new Advisor(true);
+        array[9][4] = new General(true);
+        array[9][5] = new Advisor(true);
+        array[9][6] = new Elephant(true);
+        array[9][7] = new Horse(true);
+        array[9][8] = new Chariot(true);
     }
 
     public static void main(String[] args) {
         Board game = new Board();
-        Piece[][] board = game.getBoard();
+        Piece[][] board = game.getArray();
 
 //        for (int i = 0; i < ROW; i++) {
 //            for (int j = 0; j < COL; j++) {

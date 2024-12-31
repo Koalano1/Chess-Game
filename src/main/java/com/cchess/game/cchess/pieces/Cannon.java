@@ -20,7 +20,7 @@ public class Cannon extends Piece {
         int rowTo = to.getRow();
         int colTo = to.getCol();
 
-        Piece pieceAtTo = board.getBoard()[rowTo][colTo];
+        Piece pieceAtTo = board.getArray()[rowTo][colTo];
         if (rowFrom == rowTo) {
             int piecesBetween = piecesBetween(board, "horizontal", from, to);
             if (piecesBetween == 0 && pieceAtTo != null)
@@ -52,7 +52,7 @@ public class Cannon extends Piece {
     }
 
     private int piecesBetween(Board board, String type, Position from, Position to) {
-        Piece[][] pieces = board.getBoard();
+        Piece[][] pieces = board.getArray();
         int count = 0;
         if (type.equals("horizontal")) {
             int lowerCol = Math.min(from.getCol(), to.getCol());

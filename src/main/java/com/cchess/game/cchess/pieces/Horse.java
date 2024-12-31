@@ -19,7 +19,7 @@ public class Horse extends Piece {
         int rowTo = to.getRow();
         int colTo = to.getCol();
 
-        Piece[][] pieces = board.getBoard();
+        Piece[][] pieces = board.getArray();
         
         boolean cond1 = (colFrom - colTo == 2 && Math.abs(rowFrom - rowTo) == 1
             && pieces[rowFrom][colFrom - 1] == null && pieces[rowTo][colFrom - 1] == null);
@@ -34,7 +34,7 @@ public class Horse extends Piece {
             && pieces[rowFrom + 1][colFrom] == null && pieces[rowFrom + 1][colTo] == null);
 
         if (!cond1 && !cond2 && !cond3 && !cond4) return false;
-        Piece pieceAtTo = board.getBoard()[rowTo][colTo];
+        Piece pieceAtTo = board.getArray()[rowTo][colTo];
         if (pieceAtTo == null) return true;
         return this.isRed != pieceAtTo.isRed();
     }
