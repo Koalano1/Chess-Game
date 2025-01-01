@@ -42,6 +42,6 @@ public class Soldier extends Piece {
         }
 
         return (Math.abs(rowFrom - rowTo) == 1 || Math.abs(colFrom - colTo) == 1)
-                && (pieceAtTo == null || pieceAtTo.isRed() != this.isRed);
+                && (pieceAtTo == null || hasDifferentColor(pieceAtTo));
     }
 }

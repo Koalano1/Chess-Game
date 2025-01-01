@@ -21,7 +21,7 @@ public class General extends Piece {
         int rowTo = to.getRow();
         int colTo = to.getCol();
 
-        if (colTo < 3 || colTo > 5 || (rowTo < 7 && rowTo > 2)) {
+        if (board.isNotInPalace(to)) {
             return false;
         }
 
@@ -29,7 +29,7 @@ public class General extends Piece {
         Position opponentGeneralPosition = PieceUtils.getGeneralPosition(board, !isRed);
 
         boolean isSameColumn = (colTo == opponentGeneralPosition.getCol());
-        boolean hasPieceBetween = hasPieceBetween(board, to, opponentGeneralPosition);
+        boolean hasPieceBetween = board.hasPiecesBetweenVertical(to, opponentGeneralPosition);
         if (isSameColumn && !hasPieceBetween) {
             return false;
         }
@@ -42,13 +42,4 @@ public class General extends Piece {
         return (pieceAtTo == null || pieceAtTo.isRed() != this.isRed || hasPieceBetween) && isAdjacent;
     }
 
-    boolean hasPieceBetween(Board board, Position to, Position opponentGeneral) {
-        int lowerRow = Math.min(to.getRow(), opponentGeneral.getRow() + 1);
-        int upperRow = Math.max(to.getRow(), opponentGeneral.getRow() + 1);
-        for (int r = lowerRow; r <= upperRow; r++) {
-            if (board.getArray()[r][to.getCol()] != null)
-                return true;
-        }
-        return false;
-    }
 }

@@ -36,6 +36,6 @@ public class Horse extends Piece {
         if (!cond1 && !cond2 && !cond3 && !cond4) return false;
         Piece pieceAtTo = board.getArray()[rowTo][colTo];
         if (pieceAtTo == null) return true;
-        return this.isRed != pieceAtTo.isRed();
+        return hasDifferentColor(pieceAtTo);
     }
 }

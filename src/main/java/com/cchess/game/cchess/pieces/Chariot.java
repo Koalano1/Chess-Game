@@ -34,7 +34,7 @@ public class Chariot extends Piece {
             if (pieceAtTo == null) {
                 return true;
             }
-            return pieceAtTo.isRed() != this.isRed;
+            return hasDifferentColor(pieceAtTo);
         }
         if (colFrom == colTo) {
             for (int row = minRow + 1; row <= maxRow - 1; row++) {
@@ -45,7 +45,7 @@ public class Chariot extends Piece {
             if (pieceAtTo == null) {
                 return true;
             }
-            return pieceAtTo.isRed() != this.isRed;
+            return hasDifferentColor(pieceAtTo);
         }
         return false;
     }

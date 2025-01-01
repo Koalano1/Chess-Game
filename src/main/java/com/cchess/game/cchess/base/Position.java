@@ -14,14 +14,6 @@ public class Position {
         this.col = col;
     }
 
-
-//    public static Position getPositionFromString(String position) {
-//        return new Position(
-//                Character.getNumericValue(position.charAt(0)),
-//                Character.getNumericValue(position.charAt(1))
-//        );
-//    }
-
     @Override
     public String toString() {
         return "Position {row=" + row + ", col=" + col + "}";

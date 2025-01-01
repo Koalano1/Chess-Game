@@ -22,7 +22,13 @@ public class Elephant extends Piece {
         Piece[][] pieces = board.getArray();
         Piece pieceAtTo = pieces[rowTo][colTo];
 
+        if (isRed) {
+            if (rowTo < 5) return false;
+        } else {
+            if (rowTo > 4) return false;
+        }
+
         return (Math.abs(rowFrom - rowTo) == 2 && Math.abs(colFrom - colTo) == 2)
-                && (pieceAtTo == null || pieceAtTo.isRed() != this.isRed);
+                && (pieceAtTo == null || hasDifferentColor(pieceAtTo));
     }
 }

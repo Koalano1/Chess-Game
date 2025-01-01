@@ -22,51 +22,27 @@ public class Cannon extends Piece {
 
         Piece pieceAtTo = board.getArray()[rowTo][colTo];
         if (rowFrom == rowTo) {
-            int piecesBetween = piecesBetween(board, "horizontal", from, to);
-            if (piecesBetween == 0 && pieceAtTo != null)
+            boolean hasPiecesBetweenHorizontal = board.hasPiecesBetweenHorizontal(from, to);
+            if (!hasPiecesBetweenHorizontal && pieceAtTo != null)
                 return false;
 
-            if (piecesBetween == 0)
+            if (!hasPiecesBetweenHorizontal)
                 return true;
 
-            if (piecesBetween == 1 && pieceAtTo != null && pieceAtTo.isRed() != this.isRed)
-                return true;
-
-            return false;
+            return pieceAtTo != null && hasDifferentColor(pieceAtTo);
         }
 
         if (colFrom == colTo) {
-            int piecesBetween = piecesBetween(board, "vertical", from, to);
-            if (piecesBetween == 0 && pieceAtTo != null)
+            boolean hasPiecesBetweenVertical = board.hasPiecesBetweenVertical(from, to);
+            if (!hasPiecesBetweenVertical && pieceAtTo != null)
                 return false;
 
-            if (piecesBetween == 0)
+            if (!hasPiecesBetweenVertical)
                 return true;
 
-            if (piecesBetween == 1 && pieceAtTo != null && pieceAtTo.isRed() != this.isRed)
-                return true;
-
-            return false;
+            return pieceAtTo != null && hasDifferentColor(pieceAtTo);
         }
         return false;
     }
 
-    private int piecesBetween(Board board, String type, Position from, Position to) {
-        Piece[][] pieces = board.getArray();
-        int count = 0;
-        if (type.equals("horizontal")) {
-            int lowerCol = Math.min(from.getCol(), to.getCol());
-            int upperCol = Math.max(from.getCol(), to.getCol());
-            for (int col = lowerCol + 1; col <= upperCol - 1; col++)
-                if (pieces[from.getRow()][col] != null)
-                    count++;
-        } else {
-            int lowerRow = Math.min(from.getRow(), to.getRow());
-            int upperRow = Math.max(from.getRow(), to.getRow());
-            for (int row = lowerRow + 1; row <= upperRow - 1; row++)
-                if (pieces[row][from.getCol()] != null)
-                    count++;
-        }
-        return count;
-    }
 }

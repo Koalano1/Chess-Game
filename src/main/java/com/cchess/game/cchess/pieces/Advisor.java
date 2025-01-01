@@ -20,7 +20,7 @@ public class Advisor extends Piece {
         int rowTo = to.getRow();
         int colTo = to.getCol();
 
-        if (colTo < 3 || colTo > 5 || (rowTo > 2 && rowTo < 7)) {
+        if (board.isNotInPalace(to)) {
             return false;
         }
 
@@ -30,7 +30,7 @@ public class Advisor extends Piece {
 
         Piece pieceAtTo = board.getArray()[rowTo][colTo];
         if (pieceAtTo != null) {
-            return pieceAtTo.isRed() != this.isRed;
+            return hasDifferentColor(pieceAtTo);
         }
 
         return true;

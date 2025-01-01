@@ -2,6 +2,7 @@ package com.cchess.game.cchess.base;
 
 import com.cchess.game.cchess.pieces.*;
 import lombok.Data;
+import org.springframework.data.util.Pair;
 
 @Data
 public class Board {
@@ -51,6 +52,44 @@ public class Board {
         array[9][8] = new Chariot(true);
     }
 
+    private Pair<Integer, Integer> lowerAndUpperRows(Position from, Position to) {
+        return Pair.of(
+                Math.min(from.getRow(), to.getRow()),
+                Math.max(from.getRow(), to.getRow())
+        );
+    }
+
+    private Pair<Integer, Integer> lowerAndUpperCols(Position from, Position to) {
+        return Pair.of(
+                Math.min(from.getCol(), to.getCol()),
+                Math.max(from.getCol(), to.getCol())
+        );
+    }
+
+    public boolean hasPiecesBetweenHorizontal(Position from, Position to) {
+        int lowerCol = lowerAndUpperCols(from, to).getFirst();
+        int upperCol = lowerAndUpperCols(from, to).getSecond();
+        for (int col = lowerCol + 1; col <= upperCol - 1; col++)
+            if (array[from.getRow()][col] != null)
+                return true;
+        return false;
+    }
+
+    public boolean hasPiecesBetweenVertical(Position from, Position to) {
+        int lowerRow = lowerAndUpperRows(from, to).getFirst();
+        int upperRow = lowerAndUpperRows(from, to).getSecond();
+        for (int row = lowerRow + 1; row <= upperRow - 1; row++)
+            if (array[row][from.getCol()] != null)
+                return true;
+
+        return false;
+    }
+
+    public boolean isNotInPalace(Position to) {
+        return (to.getCol() < 3 || to.getCol() > 5)
+                || ((to.getRow() > 2 && to.getRow() < 7));
+    }
+
     public static void main(String[] args) {
         Board game = new Board();
         Piece[][] board = game.getArray();
@@ -67,29 +106,32 @@ public class Board {
 //        Piece redGeneral = new General(true);
 //        System.out.println(redGeneral.isValidMove(game, new Position(9, 4), new Position(8, 4)));
 
-//        Piece redGeneral = new General(true);
+        //Piece redGeneral = new General(true);
+
 //        Piece redHorse = new Horse(true);
-//        Position redGeneralPosition = PieceUtils.getGeneralPosition(game, true);
-//        Position currentPosition = PieceUtils.getGeneralPosition(game, true);
+        Piece general = new General(true);
+        Position generalPosition = new Position(7, 4);
 
 //        Piece leftRedAdvisor = PieceUtils.getPieceInstanceFromName("AD", true);
 //        Position leftRedAdvisorPosition = new Position(8, 4);
 
 //        Piece horse = new Horse(true);
-//        Position horsePosition = new Position(7, 2);
+////        Position horsePosition = new Position(7, 2);
 //        Piece cannon = new Cannon(true);
 //        Position cannonPosition = new Position(7, 1);
 //
 //        Piece chariot = new Chariot(true);
-//        Position chariotPosition = new Position(9, 0);
+////        Position chariotPosition = new Position(9, 0);
 //        Piece elephant = new Elephant(true);
-//        Position elephantPosition = new Position(6, 5);
-        Piece soldier = new Soldier(true);
-        Position soldierPosition = new Position(8, 1);
+//        Position elephantPosition = new Position(7, 2);
+//        Piece soldier = new Soldier(true);
+////        Position soldierPosition = new Position(8, 1);
+//        Piece advisor = new Advisor(true);
+//        Position advisorPosition = new Position(9, 5);
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 Position newPosition = new Position(i, j);
-                if (soldier.isValidMove(game, soldierPosition, newPosition))
+                if (general.isValidMove(game, generalPosition, newPosition))
                     System.out.println("New valid position: " + newPosition);
 
             }
