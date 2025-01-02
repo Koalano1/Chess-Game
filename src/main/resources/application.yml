@@ -29,3 +29,16 @@ security:
     secret-key: ${SECRET_KEY:secret}
     expiration-time: ${ACCESS_TOKEN_EXPIRATION_TIME:28800000}
     refresh-token-expiration-time: ${REFRESH_TOKEN_EXPIRATION_TIME:86400000}
+
+server:
+  port: 8081
+
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          socket:
+            DEBUG
+        messaging:
+          DEBUG

@@ -90,6 +90,13 @@ public class Board {
                 || ((to.getRow() > 2 && to.getRow() < 7));
     }
 
+    public void movePiece(Position from, Position to) {
+        Piece piece = array[from.getRow()][from.getCol()];
+
+        array[to.getRow()][to.getCol()] = piece;
+        array[from.getRow()][from.getCol()] = null;
+    }
+
     public static void main(String[] args) {
         Board game = new Board();
         Piece[][] board = game.getArray();
