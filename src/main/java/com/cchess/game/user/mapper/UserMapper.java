@@ -1,5 +1,6 @@
 package com.cchess.game.user.mapper;
 
+import com.cchess.game.user.UserDto;
 import com.cchess.game.user.UserRegisterResponse;
 import com.cchess.game.model.entities.User;
 import org.springframework.stereotype.Component;
@@ -15,4 +16,12 @@ public class UserMapper {
                 .build();
     }
 
+    public UserDto toDto(User user) {
+        return UserDto.builder()
+                .username(user.getUsername())
+                .elo(user.getElo())
+                .matchesLost(user.getMatchesLost().size())
+                .matchesWon(user.getMatchesWon().size())
+                .build();
+    }
 }
