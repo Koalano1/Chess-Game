@@ -50,6 +50,11 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+    @OneToMany(mappedBy = "winner", fetch = FetchType.LAZY)
+    private Set<Match> matchesWon;
+
+    @OneToMany(mappedBy = "loser", fetch = FetchType.LAZY)
+    private Set<Match> matchesLost;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
