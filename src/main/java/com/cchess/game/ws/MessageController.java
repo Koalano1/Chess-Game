@@ -8,10 +8,12 @@ import com.cchess.game.room.MoveRequest;
 import com.cchess.game.room.Room;
 import com.cchess.game.room.RoomService;
 import com.cchess.game.room.RoomStatus;
+import com.cchess.game.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,23 +24,11 @@ public class MessageController implements MessageResource {
     private final Map<String, RoomManager> game = new ConcurrentHashMap<>();
     private final RoomService roomService;
 
+    private final MessageService messageService;
+
     @Override
-    public Room join(String roomId, Player player) {
-//        Room room = roomService.findRoomById(roomId);
-//
-//        if (room == null || room.isFull()) {
-//            throw new BadRequestException("Room is full");
-//        }
-//
-//        if (room.getPlayer1() == null) {
-//            room.setPlayer1(player);
-//        } else {
-//            room.setPlayer2(player);
-//            room.setStatus(RoomStatus.PLAYING);
-//            game.put(roomId, new RoomManager(room));
-//        }
-//        return room;
-        return null;
+    public void join(String roomId, UserDto userDto) {
+        messageService.notifyPlayerJoin(roomId, userDto);
     }
 
     @Override
@@ -66,6 +56,7 @@ public class MessageController implements MessageResource {
 
         room.setCreatedBy(createdBy);
         room.setCreatedAt(LocalDateTime.now());
+        room.setPlayers(new HashSet<>());
 
         roomService.addRoom(room);
         return room;

@@ -28,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthenticationException("Invalid username or password");
         }
 
-        if (userDetails.isEnabled()) throw new AuthenticationException("User is not active");
+        if (!userDetails.isEnabled()) throw new AuthenticationException("User is not active");
 
         String refreshToken = jwtService.generateRefreshToken(userDetails);
         String token = jwtService.generateToken(userDetails);

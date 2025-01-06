@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class RoomService {
 
-    private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
     
     public Room findRoomById(String roomId) {
         synchronized (rooms) {
