@@ -17,6 +17,9 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(name = "room_id", nullable = false)
+    private String roomId;
+
     @ManyToOne
     @JoinColumn(name = "winner_id", nullable = false)
     private User winner;

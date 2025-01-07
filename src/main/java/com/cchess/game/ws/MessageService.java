@@ -14,7 +14,7 @@ public class MessageService {
     private final SimpMessagingTemplate messagingTemplate;
 
     public void notifyPlayerJoin(String roomId, UserDto user) {
-        sendMessage("/topic/room/" + roomId, user);
+        sendMessage("/room/" + roomId, user);
     }
 
     private void sendMessage(String destination, Object payload) {

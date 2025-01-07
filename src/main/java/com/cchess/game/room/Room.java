@@ -8,8 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.util.Pair;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Set;
 
 @Data
@@ -22,10 +24,10 @@ public class Room {
 
     private String name;
 
-    @JSONField(serialize = false)
-    private String password;
+//    @JSONField(serialize = false)
+//    private String password;
 
-    private Long createdBy;
+    private String createdBy;
 
     private LocalDateTime createdAt;
 

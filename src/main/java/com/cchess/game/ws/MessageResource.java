@@ -11,25 +11,20 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping("/room")
+import java.security.Principal;
+
 public interface MessageResource {
 
-    @MessageMapping("/join")
-    @SendTo("/topic/room/{roomId}")
+    @MessageMapping("/room/{roomId}/join")
+    @SendTo("/room/{roomId}/join")
     void join(@DestinationVariable String roomId,
               UserDto user
     );
 
-    @MessageMapping("/move")
-    @SendTo("/topic/room/{roomId}")
+    @MessageMapping("/room/{roomId}/move")
     Board makeMove(@DestinationVariable String roomId,
-                   @Payload MoveRequest moveRequest
-    );
-
-    @PostMapping("/create")
-    Room createRoom(String name,
-                    String password,
-                    Long createdBy
+                   @Payload MoveRequest moveRequest,
+                   Principal principal
     );
 
 }

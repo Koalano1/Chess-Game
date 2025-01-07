@@ -1,11 +1,8 @@
-package com.cchess.game.user.mapper;
+package com.cchess.game.user;
 
-import com.cchess.game.user.UserDto;
-import com.cchess.game.user.UserRegisterResponse;
 import com.cchess.game.model.entities.User;
 import org.springframework.stereotype.Component;
 
-//@Mapper(componentModel = "spring")
 @Component
 public class UserMapper {
 

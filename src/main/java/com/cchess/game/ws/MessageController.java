@@ -1,19 +1,14 @@
 package com.cchess.game.ws;
 
-import com.cchess.game.room.RoomManager;
-import com.cchess.game.cchess.Player;
 import com.cchess.game.cchess.base.Board;
-import com.cchess.game.exception.BadRequestException;
 import com.cchess.game.room.MoveRequest;
-import com.cchess.game.room.Room;
+import com.cchess.game.room.RoomManager;
 import com.cchess.game.room.RoomService;
-import com.cchess.game.room.RoomStatus;
 import com.cchess.game.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.security.Principal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,34 +27,9 @@ public class MessageController implements MessageResource {
     }
 
     @Override
-    public Board makeMove(String roomId, MoveRequest moveRequest) {
-//        RoomManager gameManager = game.get(roomId);
-//        if (gameManager == null) {
-//            throw new BadRequestException("Room not found");
-//        }
-//
-//        boolean success = gameManager.makeMove(moveRequest.getPlayer(), moveRequest.getFrom(), moveRequest.getTo());
-//        if (!success) {
-//            throw new BadRequestException("Invalid move");
-//        }
-//
-//        return gameManager.room().getBoard();
+    public Board makeMove(String roomId, MoveRequest moveRequest, Principal principal) {
+
         return null;
-    }
-
-    @Override
-    public Room createRoom(String name, String password, Long createdBy) {
-        Room room = new Room();
-        room.setId(String.valueOf(System.currentTimeMillis()));
-        room.setName(name);
-        room.setPassword(password);
-
-        room.setCreatedBy(createdBy);
-        room.setCreatedAt(LocalDateTime.now());
-        room.setPlayers(new HashSet<>());
-
-        roomService.addRoom(room);
-        return room;
     }
 
 }

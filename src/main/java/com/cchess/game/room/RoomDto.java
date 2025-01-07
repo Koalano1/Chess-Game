@@ -3,6 +3,7 @@ package com.cchess.game.room;
 import com.cchess.game.user.UserDto;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import java.util.Set;
 @Builder
 public class RoomDto {
 
+    @NonNull
     private String roomId;
 
     private Set<UserDto> players;

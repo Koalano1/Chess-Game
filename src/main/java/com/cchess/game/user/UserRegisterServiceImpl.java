@@ -2,7 +2,6 @@ package com.cchess.game.user;
 
 import com.cchess.game.auth.MailBody;
 import com.cchess.game.exception.UsernameExistedException;
-import com.cchess.game.user.mapper.UserMapper;
 import com.cchess.game.model.entities.User;
 import com.cchess.game.security.EmailService;
 import com.cchess.game.security.OtpService;
