@@ -25,5 +25,4 @@ public class MessageService {
             log.error("Failed to send message to {}", destination);
         }
     }
-
 }

@@ -32,4 +32,9 @@ public class MessageController implements MessageResource {
         return null;
     }
 
+    @Override
+    public void start(String roomId, Principal principal) {
+        roomService.start(roomId, principal.getName());
+    }
+
 }

@@ -11,6 +11,6 @@ public interface RoomResource {
 
     @GetMapping(value = "/join")
     @ResponseStatus(HttpStatus.OK)
-    RoomDto joinRoom(Authentication authentication);
+    RoomDto joinRoom();
 
 }
