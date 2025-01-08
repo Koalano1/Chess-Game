@@ -17,6 +17,10 @@ public class MessageService {
         sendMessage("/room/" + roomId, user);
     }
 
+    public void notifyPlayerLeave(String roomId, UserDto userDto) {
+        sendMessage("/room/" + roomId + "/leave", userDto);
+    }
+
     private void sendMessage(String destination, Object payload) {
         try {
             messagingTemplate.convertAndSend(destination, payload);
@@ -25,4 +29,5 @@ public class MessageService {
             log.error("Failed to send message to {}", destination);
         }
     }
+
 }

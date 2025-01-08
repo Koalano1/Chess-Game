@@ -2,7 +2,6 @@ package com.cchess.game.room;
 
 import com.cchess.game.cchess.GameState;
 import com.cchess.game.cchess.Player;
-import com.cchess.game.cchess.base.Board;
 import com.cchess.game.exception.BadRequestException;
 import com.cchess.game.user.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -13,19 +12,18 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomService {
 
-    private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private final Map<String, Room> roomMap = new ConcurrentHashMap<>();
     private final RoomMapper roomMapper;
 
     public RoomDto addPlayerToRoom(UserDto userDto) {
-        synchronized (rooms) {
-            for (Room room : rooms.values()) {
+        synchronized (roomMap) {
+            for (Room room : roomMap.values()) {
                 Set<UserDto> players = room.getPlayers();
                 List<UserDto> playerList = new ArrayList<>(players);
 
@@ -46,8 +44,8 @@ public class RoomService {
         Room room = createRoom(userDto);
         room.getPlayers().add(userDto);
 
-        synchronized (rooms) {
-            rooms.put(room.getId(), room);
+        synchronized (roomMap) {
+            roomMap.put(room.getId(), room);
         }
         return roomMapper.toDto(room);
     }
@@ -78,14 +76,10 @@ public class RoomService {
 
     }
 
-    public void addRoom(Room room) {
-        rooms.put(room.getId(), room);
-    }
-
     private Room createRoom(UserDto userDto) {
         return Room.builder()
                 .id(UUID.randomUUID().toString())
-                .name("Room " + rooms.size())
+                .name("Room " + roomMap.size())
                 .createdBy(userDto.getUsername())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -95,20 +89,42 @@ public class RoomService {
                 .build();
     }
 
-    public void removeRoom(String roomId) {
-        rooms.remove(roomId);
-    }
-
-    public Collection<Room> getAllRooms() {
-        return rooms.values();
-    }
-
     public Room findRoomById(String roomId) {
-        synchronized (rooms) {
-            Room room = rooms.get(roomId);
+        synchronized (roomMap) {
+            Room room = roomMap.get(roomId);
             if (room == null) throw new BadRequestException("Room not found");
 
             return room;
         }
     }
+
+    public synchronized boolean removePlayerFromRoom(UserDto userDto, String roomId) {
+        Room room = roomMap.get(roomId);
+
+        GameState currentGameState = room.getGameState();
+        if (currentGameState != null) {
+            if (currentGameState.getCurrentPlayer().getUsername().equals(userDto.getUsername())) {
+                currentGameState.setCurrentPlayer(null);
+            } else if (currentGameState.getOtherPlayer().getUsername().equals(userDto.getUsername())) {
+                currentGameState.setOtherPlayer(null);
+            }
+        }
+
+        Set<UserDto> currentUsersInRoom = room.getPlayers();
+        currentUsersInRoom.remove(userDto);
+
+        room.setGameState(currentGameState);
+        roomMap.put(roomId, room);
+        return true;
+    }
+
+    public List<RoomDto> getAvailableRooms() {
+        synchronized (roomMap) {
+            List<RoomDto> availableRooms = new ArrayList<>();
+            for (Room room : roomMap.values())
+                availableRooms.add(roomMapper.toDto(room));
+            return availableRooms;
+        }
+    }
+
 }

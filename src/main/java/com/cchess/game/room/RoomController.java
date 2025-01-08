@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class RoomController implements RoomResource {
@@ -28,6 +30,25 @@ public class RoomController implements RoomResource {
         messageService.notifyPlayerJoin(roomDto.getRoomId(), userDto);
 
         return roomDto;
+    }
+
+    @Override
+    public Boolean leave(String roomId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByUsername(username);
+        UserDto userDto = userMapper.toDto(user);
+
+        boolean isLeave = roomService.removePlayerFromRoom(userDto, roomId);
+        if (isLeave) {
+            messageService.notifyPlayerLeave(roomId, userDto);
+        }
+
+        return isLeave;
+    }
+
+    @Override
+    public List<RoomDto> availableRooms() {
+        return roomService.getAvailableRooms();
     }
 
 }
