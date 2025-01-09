@@ -24,9 +24,10 @@ public class MessageService {
     private void sendMessage(String destination, Object payload) {
         try {
             messagingTemplate.convertAndSend(destination, payload);
-            log.info("Message sent to {}", destination);
+            log.debug("Message sent to {}", destination);
         } catch (Exception e) {
-            log.error("Failed to send message to {}", destination);
+            log.error("Failed to send message to {}. Exception: {}", destination, e.getMessage(), e);
+            throw new RuntimeException("Error sending message to " + destination, e);
         }
     }
 

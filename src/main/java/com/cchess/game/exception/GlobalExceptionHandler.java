@@ -75,13 +75,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(OtpInvalidException.class)
-    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<BaseErrorDto> handleOtpInvalid(OtpInvalidException ex) {
         BaseErrorDto errorResponse = BaseErrorDto.builder()
                 .timestamp(new Date(System.currentTimeMillis()))
                 .message(ex.getMessage())
                 .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.EXPECTATION_FAILED);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
 }
