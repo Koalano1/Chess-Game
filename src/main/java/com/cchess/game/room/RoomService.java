@@ -3,6 +3,7 @@ package com.cchess.game.room;
 import com.cchess.game.cchess.GameState;
 import com.cchess.game.cchess.Player;
 import com.cchess.game.exception.BadRequestException;
+import com.cchess.game.exception.NotFoundException;
 import com.cchess.game.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RoomService {
 
     private final Map<String, Room> roomMap = new ConcurrentHashMap<>();
+    private final Map<String, RoomManager> games = new ConcurrentHashMap<>();
     private final RoomMapper roomMapper;
 
     public RoomDto addPlayerToRoom(UserDto userDto) {
@@ -47,6 +49,11 @@ public class RoomService {
         synchronized (roomMap) {
             roomMap.put(room.getId(), room);
         }
+
+        synchronized (games) {
+            games.put(room.getId(), new RoomManager(room));
+        }
+
         return roomMapper.toDto(room);
     }
 
@@ -92,9 +99,18 @@ public class RoomService {
     public Room findRoomById(String roomId) {
         synchronized (roomMap) {
             Room room = roomMap.get(roomId);
-            if (room == null) throw new BadRequestException("Room not found");
+            if (room == null) throw new NotFoundException("Room not found");
 
             return room;
+        }
+    }
+
+    public RoomManager findRoomManagerByRoomId(String roomId) {
+        synchronized (games) {
+            RoomManager roomManager = games.get(roomId);
+            if (roomManager == null) throw new NotFoundException("Room not found");
+
+            return roomManager;
         }
     }
 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+    <!-- Include SockJS and STOMP.js libraries from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.2/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h1>WebSocket Test</h1>
+<script>
+    // Establish a WebSocket connection
+    const socket = new SockJS('http://localhost:8081/ws');  // Ensure the correct WebSocket URL
+    const stompClient = Stomp.over(socket);
+
+    // Connect to the WebSocket server
+    stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+
+        // Send a message to the server
+        const messagePayload = {
+            roomId: '785117b0-d8d8-4242-8196-50a7c934d220',
+            principal: 'tranglh'
+        };
+
+        stompClient.send(
+            '/app/room/785117b0-d8d8-4242-8196-50a7c934d220/start',
+            {},
+            JSON.stringify(messagePayload)
+        );
+
+        // Optionally subscribe to a channel to receive server messages
+        stompClient.subscribe('/room/785117b0-d8d8-4242-8196-50a7c934d220', function (message) {
+            console.log('Received message: ' + message.body);
+        });
+    });
+</script>
+</body>
+</html>

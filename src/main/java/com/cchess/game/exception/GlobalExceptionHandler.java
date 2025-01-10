@@ -84,4 +84,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(InvalidMoveException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseErrorDto> invalidMoveException(InvalidMoveException ex) {
+        BaseErrorDto errorResponse = BaseErrorDto.builder()
+                .timestamp(new Date(System.currentTimeMillis()))
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
 }

@@ -16,4 +16,10 @@ public class GameState {
 
     private Player otherPlayer;
 
+    public Player findCurrentPlayerByUsername(String username) {
+        if (currentPlayer.getUsername().equals(username)) {
+            return currentPlayer;
+        }
+        return null;
+    }
 }
