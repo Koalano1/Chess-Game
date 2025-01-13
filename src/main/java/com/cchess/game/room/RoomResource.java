@@ -19,6 +19,10 @@ public interface RoomResource {
     @ResponseStatus(HttpStatus.OK)
     Boolean leave(@PathVariable String roomId);
 
+    @GetMapping(value = "/{roomId}/join")
+    @ResponseStatus(HttpStatus.OK)
+    RoomDto joinSpecificRoom(@PathVariable String roomId);
+
     @GetMapping(value = "/available")
     @ResponseStatus(HttpStatus.OK)
     List<RoomDto> availableRooms();

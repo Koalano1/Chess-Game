@@ -47,6 +47,18 @@ public class RoomController implements RoomResource {
     }
 
     @Override
+    public RoomDto joinSpecificRoom(String roomId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByUsername(username);
+        UserDto userDto = userMapper.toDto(user);
+
+        RoomDto roomDto = roomService.playerJoinRoom(userDto, roomId);
+        messageService.notifyPlayerJoin(roomId, userDto);
+
+        return roomDto;
+    }
+
+    @Override
     public List<RoomDto> availableRooms() {
         return roomService.getAvailableRooms();
     }

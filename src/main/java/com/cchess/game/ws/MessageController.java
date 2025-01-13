@@ -7,18 +7,13 @@ import com.cchess.game.cchess.base.Position;
 import com.cchess.game.exception.InvalidMoveException;
 import com.cchess.game.exception.NotFoundException;
 import com.cchess.game.room.MoveRequest;
-import com.cchess.game.room.Room;
 import com.cchess.game.room.RoomManager;
 import com.cchess.game.room.RoomService;
 import com.cchess.game.user.UserDto;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequiredArgsConstructor
@@ -69,5 +64,10 @@ public class MessageController implements MessageResource {
     public void start(String roomId, Principal principal) {
         roomService.start(roomId, principal.getName());
     }
+
+//    @Override
+//    public void timeOver(String roomId, TimeOverMessage timeOverMessage) {
+//        roomManager.handlerTimeOver(roomId, timeOverMessage.getUsername());
+//    }
 
 }

@@ -32,4 +32,9 @@ public interface MessageResource {
                @AuthenticationPrincipal Principal principal
     );
 
+//    @MessageMapping("/room/{roomId}/game/time-over")
+//    void timeOver(@DestinationVariable String roomId,
+//                  @Payload TimeOverMessage timeOverMessage
+//    );
+
 }

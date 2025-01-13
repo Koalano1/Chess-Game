@@ -143,4 +143,14 @@ public class RoomService {
         }
     }
 
+    public synchronized RoomDto playerJoinRoom(UserDto userDto, String roomId) {
+        Room room = roomMap.get(roomId);
+        if (room == null) throw new NotFoundException("Room not found");
+
+        Set<UserDto> players = room.getPlayers();
+        if (players.size() == 2) throw new BadRequestException("Room is full");
+
+        players.add(userDto);
+        return roomMapper.toDto(room);
+    }
 }
