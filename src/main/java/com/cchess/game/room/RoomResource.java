@@ -1,11 +1,9 @@
 package com.cchess.game.room;
 
+import com.cchess.game.cchess.base.Board;
 import com.cchess.game.ws.DrawRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,9 +30,9 @@ public interface RoomResource {
     @ResponseStatus(HttpStatus.OK)
     void ready(@PathVariable String roomId);
 
-    @GetMapping(value = "/{roomId}/move")
+    @PostMapping(value = "/{roomId}/move")
     @ResponseStatus(HttpStatus.OK)
-    void makeMove(@PathVariable String roomId, MoveRequest moveRequest);
+    Board makeMove(@PathVariable String roomId, @RequestBody MoveRequest moveRequest);
 
     @GetMapping(value = "/{roomId}/draw-request")
     @ResponseStatus(HttpStatus.OK)

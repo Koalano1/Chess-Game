@@ -1,5 +1,6 @@
 package com.cchess.game.ws;
 
+import com.cchess.game.cchess.base.Position;
 import com.cchess.game.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,14 @@ public class MessageService {
 
     public void notifyGameStarted(String roomId) {
         sendMessage("/room/" + roomId, "GAME STARTED.");
+    }
+
+    public void notifyNewMove(String roomId, Position from, Position to) {
+        String oldPosition = from.toString();
+        String newPosition = to.toString();
+        String message = "New move from " + oldPosition + " to " + newPosition;
+
+        sendMessage("/room/" + roomId, message);
     }
 
     public void notifyPlayerLeave(String roomId, UserDto userDto) {

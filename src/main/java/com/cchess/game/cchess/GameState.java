@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GameState {
 
+    @Builder.Default
     private Board board = new Board();
 
     private Player currentPlayer;

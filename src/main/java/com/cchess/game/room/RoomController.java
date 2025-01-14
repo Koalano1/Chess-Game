@@ -1,5 +1,7 @@
 package com.cchess.game.room;
 
+import com.cchess.game.cchess.GameService;
+import com.cchess.game.cchess.base.Board;
 import com.cchess.game.model.entities.User;
 import com.cchess.game.user.UserDto;
 import com.cchess.game.user.UserMapper;
@@ -20,6 +22,7 @@ public class RoomController implements RoomResource {
     private final UserService userService;
     private final UserMapper userMapper;
     private final RoomService roomService;
+    private final GameService gameService;
 
     @Override
     public RoomDto joinRoom() {
@@ -71,8 +74,8 @@ public class RoomController implements RoomResource {
     }
 
     @Override
-    public void makeMove(String roomId, MoveRequest moveRequest) {
-
+    public Board makeMove(String roomId, MoveRequest moveRequest) {
+        return gameService.makeMove(roomId, moveRequest);
     }
 
     @Override

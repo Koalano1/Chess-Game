@@ -97,4 +97,22 @@ public class Board {
         array[from.getRow()][from.getCol()] = null;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                Piece piece = array[i][j];
+                if (piece == null) {
+                    sb.append(" . ");
+                } else {
+                    sb.append(String.format("%2s ", piece.getName()));
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
 }

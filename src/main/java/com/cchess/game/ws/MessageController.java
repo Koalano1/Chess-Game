@@ -27,38 +27,37 @@ public class MessageController implements MessageResource {
         messageService.notifyPlayerJoin(roomId, userDto);
     }
 
-    @Override
-    public Board makeMove(String roomId, MoveRequest moveRequest, Principal principal) {
-        RoomManager roomManager = roomService.findRoomManagerByRoomId(roomId);
-        if (roomManager == null || roomManager.room() == null) {
-            throw new NotFoundException("Room not found");
-        }
-
-        UserDto userDto = roomManager.room().getPlayers().stream()
-                .filter(p -> p.getUsername().equals(principal.getName()))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Player not found"));
-
-        GameState gameState = roomManager.room().getGameState();
-        Player player = gameState.findCurrentPlayerByUsername(userDto.getUsername());
-
-        Position from = Position.builder()
-                .row(moveRequest.getFrom().getRow())
-                .col(moveRequest.getFrom().getCol())
-                .build();
-        Position to = Position.builder()
-                .row(moveRequest.getTo().getRow())
-                .col(moveRequest.getTo().getCol())
-                .build();
-
-        boolean moveMade = roomManager.makeMove(player, from, to);
-
-        if (!moveMade) {
-            throw new InvalidMoveException("Invalid move");
-        }
-
-        return roomManager.room().getGameState().getBoard();
-    }
+//    public Board makeMove(String roomId, MoveRequest moveRequest, Principal principal) {
+//        RoomManager roomManager = roomService.findRoomManagerByRoomId(roomId);
+//        if (roomManager == null || roomManager.room() == null) {
+//            throw new NotFoundException("Room not found");
+//        }
+//
+//        UserDto userDto = roomManager.room().getPlayers().stream()
+//                .filter(p -> p.getUsername().equals(principal.getName()))
+//                .findFirst()
+//                .orElseThrow(() -> new NotFoundException("Player not found"));
+//
+//        GameState gameState = roomManager.room().getGameState();
+//        Player player = gameState.findCurrentPlayerByUsername(userDto.getUsername());
+//
+//        Position from = Position.builder()
+//                .row(moveRequest.getFrom().getRow())
+//                .col(moveRequest.getFrom().getCol())
+//                .build();
+//        Position to = Position.builder()
+//                .row(moveRequest.getTo().getRow())
+//                .col(moveRequest.getTo().getCol())
+//                .build();
+//
+//        boolean moveMade = roomManager.makeMove(player, from, to);
+//
+//        if (!moveMade) {
+//            throw new InvalidMoveException("Invalid move");
+//        }
+//
+//        return roomManager.room().getGameState().getBoard();
+//    }
 
 //    @Override
 //    public void start(String roomId, Principal principal) {
