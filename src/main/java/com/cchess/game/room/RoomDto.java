@@ -1,5 +1,6 @@
 package com.cchess.game.room;
 
+import com.cchess.game.cchess.Player;
 import com.cchess.game.user.UserDto;
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,7 @@ public class RoomDto {
 
     private Set<UserDto> players;
 
+    private Player currentPlayer;
+
+    private Player otherPlayer;
 }

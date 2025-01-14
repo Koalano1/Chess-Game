@@ -27,10 +27,10 @@ public interface MessageResource {
                    @AuthenticationPrincipal Principal principal
     );
 
-    @MessageMapping("/room/{roomId}/start")
-    void start(@DestinationVariable String roomId,
-               @AuthenticationPrincipal Principal principal
-    );
+//    @MessageMapping("/room/{roomId}/start")
+//    void start(@DestinationVariable String roomId,
+//               @AuthenticationPrincipal Principal principal
+//    );
 
 //    @MessageMapping("/room/{roomId}/game/time-over")
 //    void timeOver(@DestinationVariable String roomId,

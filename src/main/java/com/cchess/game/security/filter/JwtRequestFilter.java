@@ -26,7 +26,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtRequestFilter.class);
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
@@ -55,7 +54,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                             null,
                             userDetails.getAuthorities()
                     );
-                    log.info("User authenticated: {}", userDetails.getAuthorities().toString());
+                    log.info("User authenticated: {}", userDetails.getUsername());
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);

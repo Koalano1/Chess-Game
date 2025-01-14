@@ -60,10 +60,10 @@ public class MessageController implements MessageResource {
         return roomManager.room().getGameState().getBoard();
     }
 
-    @Override
-    public void start(String roomId, Principal principal) {
-        roomService.start(roomId, principal.getName());
-    }
+//    @Override
+//    public void start(String roomId, Principal principal) {
+//        roomService.start(roomId, principal.getName());
+//    }
 
 //    @Override
 //    public void timeOver(String roomId, TimeOverMessage timeOverMessage) {

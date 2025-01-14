@@ -5,14 +5,14 @@ import com.cchess.game.cchess.Player;
 import com.cchess.game.exception.BadRequestException;
 import com.cchess.game.exception.NotFoundException;
 import com.cchess.game.user.UserDto;
+import com.cchess.game.ws.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -22,10 +22,15 @@ public class RoomService {
     private final Map<String, Room> roomMap = new ConcurrentHashMap<>();
     private final Map<String, RoomManager> games = new ConcurrentHashMap<>();
     private final RoomMapper roomMapper;
+    private final MessageService messageService;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final Map<String, Runnable> countdownTasks = new ConcurrentHashMap<>();
 
     public RoomDto addPlayerToRoom(UserDto userDto) {
         synchronized (roomMap) {
             for (Room room : roomMap.values()) {
+
                 Set<UserDto> players = room.getPlayers();
                 List<UserDto> playerList = new ArrayList<>(players);
 
@@ -36,8 +41,20 @@ public class RoomService {
                         return roomMapper.toDto(room);
                     }
                 }
+
                 if (players.size() < 2) {
                     players.add(userDto);
+                    room.setPlayers(players);
+
+                    GameState currentGameState = room.getGameState();
+                    currentGameState.setOtherPlayer(
+                            Player.builder()
+                                    .username(userDto.getUsername())
+                                    .build());
+
+                    room.setGameState(currentGameState);
+                    roomMap.put(room.getId(), room);
+
                     return roomMapper.toDto(room);
                 }
             }
@@ -57,33 +74,87 @@ public class RoomService {
         return roomMapper.toDto(room);
     }
 
-    public void start(String roomId, String name) {
+    public void updatePlayerReadyStatus(String username, String roomId) {
+        Room room = roomMap.get(roomId);
+        GameState gameState = room.getGameState();
+
+        Boolean newStatus = gameState.updatePlayerReadyStatus(username);
+        messageService.notifyPlayerReady(roomId, username, newStatus);
+
+        if (gameState.bothPlayersReady()) {
+            room.setStatus(RoomStatus.BEGINNING);
+            startCountdown(roomId);
+        } else {
+            stopCountDown(roomId);
+        }
+    }
+
+    private void startCountdown(String roomId) {
+        stopCountDown(roomId);
+
+        Runnable countdownTask = new Runnable() {
+            private int timeLeft = 10;
+
+            @Override
+            public void run() {
+                if (timeLeft > 0) {
+                    messageService.notifyCountdown(roomId, timeLeft);
+                    timeLeft--;
+                } else {
+                    stopCountDown(roomId);
+                    start(roomId);
+                }
+            }
+        };
+
+//        scheduler.scheduleAtFixedRate(countdownTask, 0, 1, java.util.concurrent.TimeUnit.SECONDS);
+//        countdownTasks.put(roomId, countdownTask);
+        ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(countdownTask, 0, 1, TimeUnit.SECONDS);
+        countdownTasks.put(roomId, () -> scheduledTask.cancel(false));
+    }
+
+    private void stopCountDown(String roomId) {
+        Runnable task = countdownTasks.get(roomId);
+        if (task != null) {
+//            scheduler.shutdownNow();
+            task.run();
+            countdownTasks.remove(roomId);
+            messageService.notifyCountdownStopped(roomId);
+        }
+    }
+
+    public void start(String roomId) {
         Room room = findRoomById(roomId);
 
-        Set<UserDto> players = room.getPlayers();
-        Pair<UserDto, UserDto> playersPair = Pair.of(players.iterator().next(), players.iterator().next());
+        GameState gameState = room.getGameState();
 
         Random random = new Random();
         if (random.nextInt(10) % 2 == 0) {
-            Player redPlayer = Player.builder()
-                    .username(playersPair.getFirst().getUsername())
-                    .isRed(true)
-                    .build();
-            Player blackPlayer = Player.builder()
-                    .username(playersPair.getSecond().getUsername())
-                    .isRed(false)
-                    .build();
 
-            GameState initialGameState = new GameState();
-            initialGameState.setCurrentPlayer(redPlayer);
-            initialGameState.setOtherPlayer(blackPlayer);
+            Player currentPlayer = gameState.getCurrentPlayer();
+            currentPlayer.setIsRed(true);
+            Player otherPlayer = gameState.getOtherPlayer();
+            otherPlayer.setIsRed(false);
+        } else {
+            Player otherPlayer = gameState.getOtherPlayer();
+            otherPlayer.setIsRed(true);
+            Player oldCurrentPlayer = gameState.getCurrentPlayer();
+            oldCurrentPlayer.setIsRed(false);
 
-            log.info("Game started!");
+            gameState.setCurrentPlayer(otherPlayer);
+            gameState.setOtherPlayer(oldCurrentPlayer);
         }
 
+        messageService.notifyGameStarted(roomId);
+        room.setStatus(RoomStatus.PLAYING);
     }
 
     private Room createRoom(UserDto userDto) {
+        Player player = Player.builder().username(userDto.getUsername()).build();
+        GameState initialGameState = GameState.builder()
+                .currentPlayer(player)
+                .otherPlayer(null)
+                .build();
         return Room.builder()
                 .id(UUID.randomUUID().toString())
                 .name("Room " + roomMap.size())
@@ -91,7 +162,7 @@ public class RoomService {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .status(RoomStatus.OPEN)
-                .gameState(null)
+                .gameState(initialGameState)
                 .players(new HashSet<>())
                 .build();
     }
@@ -128,6 +199,11 @@ public class RoomService {
 
         Set<UserDto> currentUsersInRoom = room.getPlayers();
         currentUsersInRoom.remove(userDto);
+
+        if (currentUsersInRoom.isEmpty()) {
+            roomMap.remove(roomId);
+            return true;
+        }
 
         room.setGameState(currentGameState);
         roomMap.put(roomId, room);

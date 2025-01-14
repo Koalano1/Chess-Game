@@ -15,6 +15,8 @@ public class RoomMapper {
                         .stream()
                         .map(this::convertUserDto)
                         .collect(Collectors.toSet()))
+                .currentPlayer(room.getGameState().getCurrentPlayer())
+                .otherPlayer(room.getGameState().getOtherPlayer())
                 .build();
     }
 

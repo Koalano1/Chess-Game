@@ -13,12 +13,28 @@ public class MessageService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void notifyPlayerJoin(String roomId, UserDto user) {
-        sendMessage("/room/" + roomId, user);
+    public void notifyPlayerJoin(String roomId, UserDto userDto) {
+        sendMessage("/room/" + roomId, userDto.getUsername() + " joined the room.");
+    }
+
+    public void notifyPlayerReady(String roomId, String username, Boolean newStatus) {
+        sendMessage("/room/" + roomId, username + " is " + (newStatus ? "ready" : "not ready"));
+    }
+
+    public void notifyCountdown(String roomId, int timeLeft) {
+        sendMessage("/room/" + roomId, timeLeft);
+    }
+
+    public void notifyCountdownStopped(String roomId) {
+        sendMessage("/room/" + roomId, "Countdown stopped.");
+    }
+
+    public void notifyGameStarted(String roomId) {
+        sendMessage("/room/" + roomId, "GAME STARTED.");
     }
 
     public void notifyPlayerLeave(String roomId, UserDto userDto) {
-        sendMessage("/room/" + roomId + "/leave", userDto);
+        sendMessage("/room/" + roomId, userDto.getUsername() + " left the room.");
     }
 
     private void sendMessage(String destination, Object payload) {
@@ -30,5 +46,4 @@ public class MessageService {
             throw new RuntimeException("Error sending message to " + destination, e);
         }
     }
-
 }

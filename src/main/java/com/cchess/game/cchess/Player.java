@@ -11,6 +11,9 @@ public class Player {
     @NonNull
     private String username;
 
-    @NonNull
-    private Boolean isRed;
+    @Builder.Default
+    private Boolean isRed = Boolean.FALSE;
+
+    @Builder.Default
+    private Boolean isReady = Boolean.FALSE;
 }
