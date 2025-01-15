@@ -15,20 +15,4 @@ public interface MessageResource {
               UserDto user
     );
 
-//    @MessageMapping("/room/{roomId}/move")
-//    Board makeMove(@DestinationVariable String roomId,
-//                   @Payload MoveRequest moveRequest,
-//                   @AuthenticationPrincipal Principal principal
-//    );
-
-//    @MessageMapping("/room/{roomId}/start")
-//    void start(@DestinationVariable String roomId,
-//               @AuthenticationPrincipal Principal principal
-//    );
-
-//    @MessageMapping("/room/{roomId}/game/time-over")
-//    void timeOver(@DestinationVariable String roomId,
-//                  @Payload TimeOverMessage timeOverMessage
-//    );
-
 }

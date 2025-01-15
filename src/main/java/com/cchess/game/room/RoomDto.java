@@ -1,6 +1,6 @@
 package com.cchess.game.room;
 
-import com.cchess.game.cchess.Player;
+import com.cchess.game.cchess.matches.Player;
 import com.cchess.game.user.UserDto;
 import lombok.Builder;
 import lombok.Data;

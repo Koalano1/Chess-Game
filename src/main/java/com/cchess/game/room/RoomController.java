@@ -1,13 +1,14 @@
 package com.cchess.game.room;
 
-import com.cchess.game.cchess.GameService;
-import com.cchess.game.cchess.base.Board;
-import com.cchess.game.model.entities.User;
+import com.cchess.game.cchess.matches.GameService;
+import com.cchess.game.user.User;
 import com.cchess.game.user.UserDto;
 import com.cchess.game.user.UserMapper;
 import com.cchess.game.user.UserService;
-import com.cchess.game.ws.DrawRequest;
+import com.cchess.game.cchess.matches.DrawRequest;
+import com.cchess.game.cchess.matches.DrawResponse;
 import com.cchess.game.ws.MessageService;
+import com.cchess.game.ws.TimeOverMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,7 +75,7 @@ public class RoomController implements RoomResource {
     }
 
     @Override
-    public Board makeMove(String roomId, MoveRequest moveRequest) {
+    public String makeMove(String roomId, MoveRequest moveRequest) {
         return gameService.makeMove(roomId, moveRequest);
     }
 
@@ -85,21 +86,22 @@ public class RoomController implements RoomResource {
         return drawRequest;
     }
 
-//    @Override
-//    public void handleDrawResponse(String roomId, boolean isAccept) {
-//        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-//        roomService.handleDrawResponse(roomId, isAccept, username);
-//    }
-//
-//    @Override
-//    public void handlerSurrenderRequest(String roomId) {
-//        String name = SecurityContextHolder.getContext().getAuthentication().getName();
-//        roomService.handleSurrenderRequest(roomId, name);
-//    }
-//
-//    @Override
-//    public void handleTimeOver(String roomId, TimeOverMessage timeOverMessage) {
-//        roomService.handleTimeOver(roomId, timeOverMessage.getUsername());
-//    }
+    @Override
+    public void handleDrawResponse(String roomId, DrawResponse drawResponse) {
+        boolean isAccept = drawResponse.getIsAgree();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        roomService.handleDrawResponse(roomId, isAccept, username);
+    }
+
+    @Override
+    public void handlerSurrenderRequest(String roomId) {
+        String loserUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        roomService.handleSurrenderRequest(roomId, loserUsername);
+    }
+
+    @Override
+    public void handleTimeOver(String roomId, TimeOverMessage timeOverMessage) {
+        roomService.handleTimeOver(roomId, timeOverMessage.getUsername());
+    }
 
 }

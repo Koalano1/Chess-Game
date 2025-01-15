@@ -1,6 +1,5 @@
 package com.cchess.game.user;
 
-import com.cchess.game.model.entities.User;
 import org.springframework.stereotype.Component;
 
 @Component

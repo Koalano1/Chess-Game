@@ -1,7 +1,7 @@
 package com.cchess.game.room;
 
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.cchess.game.cchess.GameState;
+import com.cchess.game.cchess.matches.GameState;
 import com.cchess.game.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

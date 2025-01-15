@@ -100,6 +100,9 @@ public class Board {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        final String RED = "\033[1;31m";
+        final String BLACK = "\033[1;30m";
+        final String RESET = "\033[0m";
 
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
@@ -107,7 +110,8 @@ public class Board {
                 if (piece == null) {
                     sb.append(" . ");
                 } else {
-                    sb.append(String.format("%2s ", piece.getName()));
+                    String color = piece.isRed() ? RED : BLACK;
+                    sb.append(String.format("%s%2s%s ", color, piece.getName(), RESET));
                 }
             }
             sb.append("\n");

@@ -1,6 +1,6 @@
 package com.cchess.game.security.auth;
 
-import com.cchess.game.model.entities.User;
+import com.cchess.game.user.User;
 import com.cchess.game.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

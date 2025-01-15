@@ -1,6 +1,8 @@
 package com.cchess.game.ws;
 
+import com.cchess.game.cchess.base.Board;
 import com.cchess.game.cchess.base.Position;
+import com.cchess.game.cchess.matches.DrawResponse;
 import com.cchess.game.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,9 +44,21 @@ public class MessageService {
         sendMessage("/room/" + roomId, message);
     }
 
+    public void notifyNewBoard(String roomId, Board board) {
+        sendMessage("/room/" + roomId, board.toString());
+    }
+
     public void notifyPlayerLeave(String roomId, UserDto userDto) {
         sendMessage("/room/" + roomId, userDto.getUsername() + " left the room.");
     }
+
+    public void notifyDrawResponse(String roomId, DrawResponse drawResponse) {
+        sendMessage("/room/" + roomId, drawResponse);
+    }
+
+//    public void notifyGameStopped(String roomId) {
+//        sendMessage("/room/" + roomId, "GAME STOPPED.");
+//    }
 
     private void sendMessage(String destination, Object payload) {
         try {
@@ -55,4 +69,5 @@ public class MessageService {
             throw new RuntimeException("Error sending message to " + destination, e);
         }
     }
+
 }

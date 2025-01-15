@@ -1,4 +1,4 @@
-package com.cchess.game.cchess;
+package com.cchess.game.cchess.matches;
 
 import com.cchess.game.cchess.base.Board;
 import com.cchess.game.cchess.base.Position;
@@ -20,7 +20,7 @@ public class GameService {
     private final MessageService messageService;
     private final RoomService roomService;
 
-    public Board makeMove(String roomId, MoveRequest moveRequest) {
+    public String makeMove(String roomId, MoveRequest moveRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         RoomManager roomManager = roomService.findRoomManagerByRoomId(roomId);
         if (roomManager == null || roomManager.room() == null) {
@@ -46,6 +46,8 @@ public class GameService {
 
         messageService.notifyNewMove(roomId, from, to);
 
-        return roomManager.room().getGameState().getBoard();
+        Board board = roomManager.room().getGameState().getBoard();
+        messageService.notifyNewBoard(roomId, board);
+        return board.toString();
     }
 }

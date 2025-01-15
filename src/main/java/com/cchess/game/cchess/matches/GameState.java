@@ -1,4 +1,4 @@
-package com.cchess.game.cchess;
+package com.cchess.game.cchess.matches;
 
 import com.cchess.game.cchess.base.Board;
 import lombok.AllArgsConstructor;

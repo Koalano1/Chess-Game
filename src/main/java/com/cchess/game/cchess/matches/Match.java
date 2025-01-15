@@ -1,5 +1,6 @@
-package com.cchess.game.model.entities;
+package com.cchess.game.cchess.matches;
 
+import com.cchess.game.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,11 +22,19 @@ public class Match {
     private String roomId;
 
     @ManyToOne
-    @JoinColumn(name = "winner_id", nullable = false)
+    @JoinColumn(name = "winner_id")
     private User winner;
 
     @ManyToOne
-    @JoinColumn(name = "loser_id", nullable = false)
+    @JoinColumn(name = "loser_id")
     private User loser;
 
+    private String firstPlayerUsername;
+
+    private String secondPlayerUsername;
+
+    @Column(name = "lose_reason")
+    private GameOverReason gameOverReason;
+
+    private Boolean isDraw;
 }

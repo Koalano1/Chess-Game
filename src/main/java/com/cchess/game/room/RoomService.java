@@ -1,7 +1,6 @@
 package com.cchess.game.room;
 
-import com.cchess.game.cchess.GameState;
-import com.cchess.game.cchess.Player;
+import com.cchess.game.cchess.matches.*;
 import com.cchess.game.exception.BadRequestException;
 import com.cchess.game.exception.NotFoundException;
 import com.cchess.game.user.UserDto;
@@ -21,8 +20,11 @@ public class RoomService {
 
     private final Map<String, Room> roomMap = new ConcurrentHashMap<>();
     private final Map<String, RoomManager> games = new ConcurrentHashMap<>();
+
     private final RoomMapper roomMapper;
     private final MessageService messageService;
+    private final MatchService matchService;
+    private final GameHistoryCache gameHistoryCache;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final Map<String, Runnable> countdownTasks = new ConcurrentHashMap<>();
@@ -119,7 +121,7 @@ public class RoomService {
 //            scheduler.shutdownNow();
             task.run();
             countdownTasks.remove(roomId);
-            messageService.notifyCountdownStopped(roomId);
+//            messageService.notifyCountdownStopped(roomId);
         }
     }
 
@@ -146,6 +148,10 @@ public class RoomService {
         }
 
         messageService.notifyGameStarted(roomId);
+
+        // Create new gamer history
+        gameHistoryCache.addNewGameHistoryPreMatch(roomId, gameState.getCurrentPlayer(), gameState.getOtherPlayer());
+
         room.setStatus(RoomStatus.PLAYING);
     }
 
@@ -228,5 +234,41 @@ public class RoomService {
 
         players.add(userDto);
         return roomMapper.toDto(room);
+    }
+
+    public synchronized void handleDrawResponse(String roomId, Boolean isAccept, String username) {
+        DrawResponse drawResponse = DrawResponse.builder()
+                .username(username)
+                .isAgree(isAccept)
+                .build();
+        messageService.notifyDrawResponse(roomId, drawResponse);
+
+        // Update game history
+        gameHistoryCache.updateGameHistoryPostMatch(roomId, null, null, GameOverReason.DRAW, true);
+        matchService.createAndSaveMatch(roomId);
+
+        if (isAccept) {
+            Room roomReset = roomMap.get(roomId);
+            roomReset.setUpdatedAt(LocalDateTime.now());
+            roomReset.setStatus(RoomStatus.OPEN);
+            roomReset.setPlayers(new HashSet<>());
+            roomReset.setGameState(
+                    GameState.builder()
+                            .currentPlayer(null)
+                            .otherPlayer(null)
+                            .build()
+            );
+
+            roomMap.put(roomId, roomReset);
+        }
+    }
+
+    public void handleSurrenderRequest(String roomId, String loserUsername) {
+        Room room = roomMap.get(roomId);
+        room.setPlayers(new HashSet<>());
+
+    }
+
+    public void handleTimeOver(String roomId, String loserUsername) {
     }
 }

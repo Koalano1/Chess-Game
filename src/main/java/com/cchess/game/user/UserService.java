@@ -1,7 +1,6 @@
 package com.cchess.game.user;
 
 import com.cchess.game.exception.BadRequestException;
-import com.cchess.game.model.entities.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
