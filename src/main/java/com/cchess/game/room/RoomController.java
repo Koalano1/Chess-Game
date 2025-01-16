@@ -1,14 +1,13 @@
 package com.cchess.game.room;
 
+import com.cchess.game.cchess.matches.DrawRequest;
+import com.cchess.game.cchess.matches.DrawResponse;
 import com.cchess.game.cchess.matches.GameService;
 import com.cchess.game.user.User;
 import com.cchess.game.user.UserDto;
 import com.cchess.game.user.UserMapper;
 import com.cchess.game.user.UserService;
-import com.cchess.game.cchess.matches.DrawRequest;
-import com.cchess.game.cchess.matches.DrawResponse;
 import com.cchess.game.ws.MessageService;
-import com.cchess.game.ws.TimeOverMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
@@ -97,11 +96,6 @@ public class RoomController implements RoomResource {
     public void handlerSurrenderRequest(String roomId) {
         String loserUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         roomService.handleSurrenderRequest(roomId, loserUsername);
-    }
-
-    @Override
-    public void handleTimeOver(String roomId, TimeOverMessage timeOverMessage) {
-        roomService.handleTimeOver(roomId, timeOverMessage.getUsername());
     }
 
 }

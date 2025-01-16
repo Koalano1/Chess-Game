@@ -8,6 +8,8 @@ import lombok.Getter;
 public enum GameOverReason {
 
     DRAW,
-    TIME_UP;
+    TIME_UP,
+    SUCCESSFUL_CHECKMATE,
+    RESIGNATION;
 
 }

@@ -32,7 +32,6 @@ public class GameHistoryCache {
     }
 
     public synchronized void updateGameHistoryPostMatch(String roomId, Player winner, Player loser, GameOverReason gameOverReason, Boolean isDraw) {
-
         GameHistory existingGameHistory = gameHistories.get(roomId);
 
         if (existingGameHistory == null) {
@@ -44,11 +43,8 @@ public class GameHistoryCache {
 
         existingGameHistory.setEndTime(LocalDateTime.now());
         if (winner != null && loser != null) {
-            existingGameHistory.setPlayers(new HashSet<>(Set.of(winner, loser)));
-            if (Boolean.FALSE.equals(isDraw)) {
-                existingGameHistory.setWinnerUsername(winner.getUsername());
-                existingGameHistory.setLoserUsername(loser.getUsername());
-            }
+            existingGameHistory.setWinnerUsername(winner.getUsername());
+            existingGameHistory.setLoserUsername(loser.getUsername());
         }
 
         existingGameHistory.setGameOverReason(gameOverReason);

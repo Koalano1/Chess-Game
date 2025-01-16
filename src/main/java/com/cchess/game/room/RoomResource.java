@@ -2,7 +2,6 @@ package com.cchess.game.room;
 
 import com.cchess.game.cchess.matches.DrawRequest;
 import com.cchess.game.cchess.matches.DrawResponse;
-import com.cchess.game.ws.TimeOverMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,9 +45,5 @@ public interface RoomResource {
     @GetMapping(value = "/{roomId}/surrender-request")
     @ResponseStatus(HttpStatus.OK)
     void handlerSurrenderRequest(@PathVariable String roomId);
-
-    @PostMapping(value = "/{roomId}/time-over")
-    @ResponseStatus(HttpStatus.OK)
-    void handleTimeOver(@PathVariable String roomId, @RequestBody TimeOverMessage timeOverMessage);
 
 }

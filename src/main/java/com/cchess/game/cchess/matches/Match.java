@@ -33,7 +33,8 @@ public class Match {
 
     private String secondPlayerUsername;
 
-    @Column(name = "lose_reason")
+    @Column(name = "game_over_reason")
+    @Enumerated(EnumType.STRING)
     private GameOverReason gameOverReason;
 
     private Boolean isDraw;

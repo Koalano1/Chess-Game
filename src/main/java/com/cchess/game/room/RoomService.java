@@ -26,8 +26,11 @@ public class RoomService {
     private final MatchService matchService;
     private final GameHistoryCache gameHistoryCache;
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
     private final Map<String, Runnable> countdownTasks = new ConcurrentHashMap<>();
+
+    private final Map<String, Map<String, ScheduledFuture<?>>> playerTimers = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, Integer>> playerTimeRemaining = new ConcurrentHashMap<>();
 
     public RoomDto addPlayerToRoom(UserDto userDto) {
         synchronized (roomMap) {
@@ -109,8 +112,6 @@ public class RoomService {
             }
         };
 
-//        scheduler.scheduleAtFixedRate(countdownTask, 0, 1, java.util.concurrent.TimeUnit.SECONDS);
-//        countdownTasks.put(roomId, countdownTask);
         ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(countdownTask, 0, 1, TimeUnit.SECONDS);
         countdownTasks.put(roomId, () -> scheduledTask.cancel(false));
     }
@@ -248,27 +249,97 @@ public class RoomService {
         matchService.createAndSaveMatch(roomId);
 
         if (isAccept) {
-            Room roomReset = roomMap.get(roomId);
-            roomReset.setUpdatedAt(LocalDateTime.now());
-            roomReset.setStatus(RoomStatus.OPEN);
-            roomReset.setPlayers(new HashSet<>());
-            roomReset.setGameState(
-                    GameState.builder()
-                            .currentPlayer(null)
-                            .otherPlayer(null)
-                            .build()
-            );
-
-            roomMap.put(roomId, roomReset);
+            resetRoom(roomId);
         }
     }
 
     public void handleSurrenderRequest(String roomId, String loserUsername) {
-        Room room = roomMap.get(roomId);
-        room.setPlayers(new HashSet<>());
+        messageService.notifySurrender(roomId, loserUsername);
 
+        GameState gameState = roomMap.get(roomId).getGameState();
+        Player loser = gameState.getCurrentPlayer().getUsername().equals(loserUsername) ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
+        Player winner = loser.equals(gameState.getCurrentPlayer()) ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
+
+        gameHistoryCache.updateGameHistoryPostMatch(roomId, winner, loser, GameOverReason.RESIGNATION, false);
+        matchService.createAndSaveMatch(roomId);
+
+        resetRoom(roomId);
     }
 
-    public void handleTimeOver(String roomId, String loserUsername) {
+    public void handleTimeOver(String roomId, String playerUsername) {
+        Room room = roomMap.get(roomId);
+        GameState gameState = room.getGameState();
+
+        Player loser = gameState.getCurrentPlayer().getUsername().equals(playerUsername) ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
+        Player winner = loser.equals(gameState.getCurrentPlayer()) ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
+
+        messageService.notifyGameEnded(roomId);
+        gameHistoryCache.updateGameHistoryPostMatch(roomId, winner, loser, GameOverReason.TIME_UP, false);
+        matchService.createAndSaveMatch(roomId);
+    }
+
+    private synchronized void startPlayerTimer(String roomId, String playerUsername) {
+        stopPlayerTimer(roomId, playerUsername);
+
+        int initialTimeLeft = playerTimeRemaining
+                .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
+                .getOrDefault(playerUsername, 900);
+
+        Runnable playerTimerTask = new Runnable() {
+            private int timeLeft = initialTimeLeft;
+
+            @Override
+            public void run() {
+                if (timeLeft > 0) {
+                    int minutes = timeLeft / 60;
+                    int seconds = timeLeft % 60;
+                    String formattedTime = String.format("%02d:%02d", minutes, seconds);
+
+                    messageService.notifyGameCountdown(roomId, playerUsername + ": " + formattedTime);
+                    timeLeft--;
+
+                    playerTimeRemaining.get(roomId).put(playerUsername, timeLeft);
+                } else {
+                    stopPlayerTimer(roomId, playerUsername);
+                    handleTimeOver(roomId, playerUsername);
+                }
+            }
+        };
+
+        ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(playerTimerTask, 0, 1, TimeUnit.SECONDS);
+        playerTimers
+                .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
+                .put(playerUsername, scheduledTask);
+    }
+
+    private void stopPlayerTimer(String roomId, String playerUsername) {
+        Map<String, ScheduledFuture<?>> playerTimersForRoom = playerTimers.get(roomId);
+        if (playerTimersForRoom != null) {
+            ScheduledFuture<?> task = playerTimersForRoom.get(playerUsername);
+            if (task != null) {
+                task.cancel(false);
+                playerTimersForRoom.remove(playerUsername);
+            }
+        }
+    }
+
+    public synchronized void startAndStopTimer(String usernameForStoppingTimer, String usernameForStartingTimer, String roomId) {
+        startPlayerTimer(roomId, usernameForStartingTimer);
+        stopPlayerTimer(roomId, usernameForStoppingTimer);
+    }
+
+    private synchronized void resetRoom(String roomId) {
+        Room roomReset = roomMap.get(roomId);
+        roomReset.setUpdatedAt(LocalDateTime.now());
+        roomReset.setStatus(RoomStatus.OPEN);
+        roomReset.setPlayers(new HashSet<>());
+        roomReset.setGameState(
+                GameState.builder()
+                        .currentPlayer(null)
+                        .otherPlayer(null)
+                        .build()
+        );
+
+        roomMap.put(roomId, roomReset);
     }
 }

@@ -34,6 +34,7 @@ public class GameService {
 
         GameState gameState = roomManager.room().getGameState();
         Player player = gameState.findCurrentPlayerByUsername(userDto.getUsername());
+        Player nextPlayer = gameState.getOtherPlayer();
 
         Position from = moveRequest.getFrom();
         Position to = moveRequest.getTo();
@@ -45,6 +46,8 @@ public class GameService {
         }
 
         messageService.notifyNewMove(roomId, from, to);
+
+        roomService.startAndStopTimer(player.getUsername(), nextPlayer.getUsername(), roomId);
 
         Board board = roomManager.room().getGameState().getBoard();
         messageService.notifyNewBoard(roomId, board);

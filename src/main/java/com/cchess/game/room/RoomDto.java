@@ -20,4 +20,5 @@ public class RoomDto {
     private Player currentPlayer;
 
     private Player otherPlayer;
+
 }

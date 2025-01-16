@@ -13,19 +13,15 @@ public class RoomMapper {
                 .roomId(room.getId())
                 .players(room.getPlayers()
                         .stream()
-                        .map(this::convertUserDto)
+                        .map(user -> UserDto.builder()
+                                .username(user.getUsername())
+                                .elo(user.getElo())
+                                .matchesLost(user.getMatchesLost())
+                                .matchesWon(user.getMatchesWon())
+                                .build())
                         .collect(Collectors.toSet()))
                 .currentPlayer(room.getGameState().getCurrentPlayer())
                 .otherPlayer(room.getGameState().getOtherPlayer())
-                .build();
-    }
-
-    private UserDto convertUserDto(UserDto userDto) {
-        return UserDto.builder()
-                .username(userDto.getUsername())
-                .elo(userDto.getElo())
-                .matchesLost(userDto.getMatchesLost())
-                .matchesWon(userDto.getMatchesWon())
                 .build();
     }
 

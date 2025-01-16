@@ -28,10 +28,6 @@ public class MessageService {
         sendMessage("/room/" + roomId, timeLeft);
     }
 
-    public void notifyCountdownStopped(String roomId) {
-        sendMessage("/room/" + roomId, "Countdown stopped.");
-    }
-
     public void notifyGameStarted(String roomId) {
         sendMessage("/room/" + roomId, "GAME STARTED.");
     }
@@ -56,9 +52,17 @@ public class MessageService {
         sendMessage("/room/" + roomId, drawResponse);
     }
 
-//    public void notifyGameStopped(String roomId) {
-//        sendMessage("/room/" + roomId, "GAME STOPPED.");
-//    }
+    public void notifySurrender(String roomId, String surrenderUsername) {
+        sendMessage("/room/" + roomId, surrenderUsername + " surrendered.");
+    }
+
+    public void notifyGameCountdown(String roomId, String formattedTime) {
+        sendMessage("/room/" + roomId, formattedTime);
+    }
+
+    public void notifyGameEnded(String roomId) {
+        sendMessage("/room/" + roomId, "GAME ENDED.");
+    }
 
     private void sendMessage(String destination, Object payload) {
         try {
@@ -69,5 +73,4 @@ public class MessageService {
             throw new RuntimeException("Error sending message to " + destination, e);
         }
     }
-
 }
