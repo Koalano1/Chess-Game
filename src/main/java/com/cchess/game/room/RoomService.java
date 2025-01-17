@@ -4,6 +4,7 @@ import com.cchess.game.cchess.matches.*;
 import com.cchess.game.exception.BadRequestException;
 import com.cchess.game.exception.NotFoundException;
 import com.cchess.game.user.UserDto;
+import com.cchess.game.user.UserService;
 import com.cchess.game.ws.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class RoomService {
 
     private final Map<String, Map<String, ScheduledFuture<?>>> playerTimers = new ConcurrentHashMap<>();
     private final Map<String, Map<String, Integer>> playerTimeRemaining = new ConcurrentHashMap<>();
+    private final UserService userService;
 
     public RoomDto addPlayerToRoom(UserDto userDto) {
         synchronized (roomMap) {
@@ -257,8 +259,10 @@ public class RoomService {
         messageService.notifySurrender(roomId, loserUsername);
 
         GameState gameState = roomMap.get(roomId).getGameState();
-        Player loser = gameState.getCurrentPlayer().getUsername().equals(loserUsername) ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
-        Player winner = loser.equals(gameState.getCurrentPlayer()) ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
+        Player loser = gameState.getCurrentPlayer().getUsername().equals(loserUsername)
+                ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
+        Player winner = loser.equals(gameState.getCurrentPlayer())
+                ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
 
         gameHistoryCache.updateGameHistoryPostMatch(roomId, winner, loser, GameOverReason.RESIGNATION, false);
         matchService.createAndSaveMatch(roomId);
@@ -270,12 +274,18 @@ public class RoomService {
         Room room = roomMap.get(roomId);
         GameState gameState = room.getGameState();
 
-        Player loser = gameState.getCurrentPlayer().getUsername().equals(playerUsername) ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
-        Player winner = loser.equals(gameState.getCurrentPlayer()) ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
+        Player loser = gameState.getCurrentPlayer().getUsername().equals(playerUsername)
+                ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
+        Player winner = loser.equals(gameState.getCurrentPlayer())
+                ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
 
         messageService.notifyGameEnded(roomId);
         gameHistoryCache.updateGameHistoryPostMatch(roomId, winner, loser, GameOverReason.TIME_UP, false);
+
+        userService.adjustEloRating(winner.getUsername(), loser.getUsername());
+
         matchService.createAndSaveMatch(roomId);
+
     }
 
     private synchronized void startPlayerTimer(String roomId, String playerUsername) {

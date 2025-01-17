@@ -31,7 +31,8 @@ public class GameHistoryCache {
         gameHistories.put(roomId, gameHistory);
     }
 
-    public synchronized void updateGameHistoryPostMatch(String roomId, Player winner, Player loser, GameOverReason gameOverReason, Boolean isDraw) {
+    public synchronized void updateGameHistoryPostMatch(String roomId, Player winner, Player loser,
+                                                        GameOverReason gameOverReason, Boolean isDraw) {
         GameHistory existingGameHistory = gameHistories.get(roomId);
 
         if (existingGameHistory == null) {
