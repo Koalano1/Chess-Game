@@ -1,5 +1,6 @@
-package com.cchess.game.model.entities;
+package com.cchess.game.user;
 
+import com.cchess.game.cchess.matches.Match;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;

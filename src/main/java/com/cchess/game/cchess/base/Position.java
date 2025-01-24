@@ -1,10 +1,12 @@
 package com.cchess.game.cchess.base;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@Builder
 public class Position {
     private int row;
     private int col;

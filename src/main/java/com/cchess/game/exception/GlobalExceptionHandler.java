@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<BaseErrorDto> handleUsernameExisted(AuthenticationException ex) {
+    public ResponseEntity<BaseErrorDto> handleUnauthorized(AuthenticationException ex) {
         BaseErrorDto errorResponse = BaseErrorDto.builder()
                 .timestamp(new Date(System.currentTimeMillis()))
                 .message(ex.getMessage())
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<BaseErrorDto> handle(MethodArgumentNotValidException ex) {
+    public ResponseEntity<BaseErrorDto> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         // get message if possible
         String message = Objects.requireNonNull(ex.getFieldError()).getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
@@ -61,6 +61,36 @@ public class GlobalExceptionHandler {
                 .message(errorCode.getMessage())
                 .build();
 
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<BaseErrorDto> handleNotFound(NotFoundException ex) {
+        BaseErrorDto errorResponse = BaseErrorDto.builder()
+                .timestamp(new Date(System.currentTimeMillis()))
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(OtpInvalidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseErrorDto> handleOtpInvalid(OtpInvalidException ex) {
+        BaseErrorDto errorResponse = BaseErrorDto.builder()
+                .timestamp(new Date(System.currentTimeMillis()))
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidMoveException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<BaseErrorDto> invalidMoveException(InvalidMoveException ex) {
+        BaseErrorDto errorResponse = BaseErrorDto.builder()
+                .timestamp(new Date(System.currentTimeMillis()))
+                .message(ex.getMessage())
+                .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 

@@ -1,6 +1,5 @@
 package com.cchess.game.user;
 
-import com.cchess.game.model.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

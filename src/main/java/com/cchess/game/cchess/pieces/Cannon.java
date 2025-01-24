@@ -22,25 +22,25 @@ public class Cannon extends Piece {
 
         Piece pieceAtTo = board.getArray()[rowTo][colTo];
         if (rowFrom == rowTo) {
-            boolean hasPiecesBetweenHorizontal = board.hasPiecesBetweenHorizontal(from, to);
-            if (!hasPiecesBetweenHorizontal && pieceAtTo != null)
-                return false;
 
-            if (!hasPiecesBetweenHorizontal)
-                return true;
-
-            return pieceAtTo != null && hasDifferentColor(pieceAtTo);
+            if (pieceAtTo == null) {
+                return !board.hasPiecesBetweenHorizontal(from, to);
+            } else {
+                if (hasDifferentColor(pieceAtTo)) {
+                    return board.numberOfPiecesBetweenHorizontal(from, to) == 1;
+                } else return false;
+            }
         }
 
         if (colFrom == colTo) {
-            boolean hasPiecesBetweenVertical = board.hasPiecesBetweenVertical(from, to);
-            if (!hasPiecesBetweenVertical && pieceAtTo != null)
-                return false;
 
-            if (!hasPiecesBetweenVertical)
-                return true;
-
-            return pieceAtTo != null && hasDifferentColor(pieceAtTo);
+            if (pieceAtTo == null) {
+                return !board.hasPiecesBetweenVertical(from, to);
+            } else {
+                if (hasDifferentColor(pieceAtTo)) {
+                    return board.numberOfPiecesBetweenVertical(from, to) == 1;
+                } else return false;
+            }
         }
         return false;
     }

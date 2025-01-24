@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.2/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+</head>
+<body>
+<h1>WebSocket Test</h1>
+<div id="messages"></div>
+<script>
+    function displayMessages(message) {
+        const messageDiv = document.getElementById('messages');
+        const messageElement = document.createElement('p');
+
+        messageElement.textContent = message;
+        messageDiv.appendChild(messageElement);
+    }
+    function initializeWebSocket(roomId) {
+        if (!roomId) {
+            console.error('Room ID is required to establish WebSocket connection.');
+            return;
+        }
+
+        const socket = new SockJS('http://localhost:8081/ws'); // WebSocket URL
+        const stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            displayMessages('Connected: ' + frame);
+
+            stompClient.subscribe(`/room/${roomId}`, function (message) {
+                displayMessages(message.body);
+            });
+        });
+    }
+
+    const roomId = prompt('Enter Room ID:');
+    initializeWebSocket(roomId);
+</script>
+</body>
+</html>

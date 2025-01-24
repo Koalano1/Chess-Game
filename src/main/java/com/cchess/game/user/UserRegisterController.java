@@ -1,5 +1,6 @@
 package com.cchess.game.user;
 
+import com.cchess.game.exception.OtpInvalidException;
 import com.cchess.game.security.OtpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +24,7 @@ public class UserRegisterController implements UserRegisterResource {
         String email = requestBody.get("email");
         Integer otp = Integer.parseInt(requestBody.get("otp"));
         boolean isOptValid = otpService.verifyOtp(email, otp);
-        if (!isOptValid) return "Invalid OTP";
+        if (!isOptValid) throw new OtpInvalidException();
 
         userRegisterService.verifyUser(email);
         return "User verified";

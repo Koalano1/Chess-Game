@@ -1,4 +1,4 @@
-package com.cchess.game.model.enums;
+package com.cchess.game.user;
 
 public enum ERole {
     USER,

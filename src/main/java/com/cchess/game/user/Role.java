@@ -1,6 +1,5 @@
-package com.cchess.game.model.entities;
+package com.cchess.game.user;
 
-import com.cchess.game.model.enums.ERole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
