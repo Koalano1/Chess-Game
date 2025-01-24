@@ -16,6 +16,20 @@ public class Board {
         this.initLayout();
     }
 
+    // Clone board
+    public Board clonedBoard() {
+        Board board = new Board();
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                Piece piece = array[i][j];
+                if (piece != null) {
+                    board.array[i][j] = piece;
+                }
+            }
+        }
+        return board;
+    }
+
     public void initLayout() {
         array[0][0] = new Chariot(false);
         array[0][1] = new Horse(false);
@@ -75,6 +89,16 @@ public class Board {
         return false;
     }
 
+    public int numberOfPiecesBetweenHorizontal(Position from, Position to) {
+        int lowerCol = lowerAndUpperCols(from, to).getFirst();
+        int upperCol = lowerAndUpperCols(from, to).getSecond();
+        int count = 0;
+        for (int col = lowerCol + 1; col <= upperCol - 1; col++)
+            if (array[from.getRow()][col] != null)
+                count++;
+        return count;
+    }
+
     public boolean hasPiecesBetweenVertical(Position from, Position to) {
         int lowerRow = lowerAndUpperRows(from, to).getFirst();
         int upperRow = lowerAndUpperRows(from, to).getSecond();
@@ -83,6 +107,16 @@ public class Board {
                 return true;
 
         return false;
+    }
+
+    public int numberOfPiecesBetweenVertical(Position from, Position to) {
+        int lowerRow = lowerAndUpperRows(from, to).getFirst();
+        int upperRow = lowerAndUpperRows(from, to).getSecond();
+        int count = 0;
+        for (int row = lowerRow + 1; row <= upperRow - 1; row++)
+            if (array[row][from.getCol()] != null)
+                count++;
+        return count;
     }
 
     public boolean isNotInPalace(Position to) {

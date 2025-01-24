@@ -333,7 +333,9 @@ public class RoomService {
         }
     }
 
-    public synchronized void startAndStopTimer(String usernameForStoppingTimer, String usernameForStartingTimer, String roomId) {
+    public synchronized void startAndStopTimer(String usernameForStoppingTimer,
+                                               String usernameForStartingTimer,
+                                               String roomId) {
         startPlayerTimer(roomId, usernameForStartingTimer);
         stopPlayerTimer(roomId, usernameForStoppingTimer);
     }
