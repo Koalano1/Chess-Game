@@ -22,18 +22,31 @@ public record RoomManager(Room room) {
         if (!isValidMove) throw new InvalidMoveException("Invalid move for this piece");
 
         // Check if there is a checkmate
-        boolean isCheckmated = isCheckmated(room.getGameState().getBoard(), player.getIsRed());
-        if (isCheckmated) throw new InvalidMoveException("You are checkmated");
+        boolean isInCheck = isInCheck(room.getGameState().getBoard(), player.getIsRed());
+        if (isInCheck) throw new InvalidMoveException("You are in check");
 
         // Check if the move will cause a checkmate
         Board clonedBoard = room.getGameState().getBoard().clonedBoard();
         clonedBoard.movePiece(from, to);
-        boolean willCauseCheckmate = isCheckmated(clonedBoard, player.getIsRed());
-        if (willCauseCheckmate) throw new InvalidMoveException("This move will cause a checkmate");
+        boolean willCauseCheckmate = isInCheck(clonedBoard, player.getIsRed());
+        if (willCauseCheckmate) throw new InvalidMoveException("This move will cause checkmate");
 
         room.getGameState().getBoard().movePiece(from, to);
 
+        // Sau khi đi một nước cờ thì có thể dẫn đến trạng thái chiếu hết -> đối phương ko có nước đi hợp lệ nào
+        // -> end game
+
+        // Check A có đang bị chiếu ko -> Check nước đi của A có gây ra checkmate cho chính A k
+        //                  -> A đi lượt của mình (nếu valid) -> Check chiếu hết -> end game
+        // Check B có đang bị chiếu ko -> Check nước đi của B có gây ra checkmate cho chính B k
+        //                  -> B đi lượt của mình (nếu valid)
+
         // ...
+        if (isCheckmated(room.getGameState().getBoard(), !player.getIsRed())) {
+            room.setStatus(RoomStatus.END);
+            log.info("Game over! Player {} wins", player.getUsername());
+            return true;
+        }
 
         room.getGameState().setCurrentPlayer(
                 room.getGameState().getOtherPlayer()
@@ -54,7 +67,7 @@ public record RoomManager(Room room) {
         return true;
     }
 
-    public boolean isCheckmated(Board board, boolean isRed) {
+    public boolean isInCheck(Board board, boolean isRed) {
         Board clonedBoard = board.clonedBoard();
 
         Position currentGeneralPosition = PieceUtils.getGeneralPosition(clonedBoard, isRed);
@@ -65,11 +78,41 @@ public record RoomManager(Room room) {
 
                 Position piecePosition = new Position(row, col);
                 if (piece.isValidMove(clonedBoard, piecePosition, currentGeneralPosition)) {
-                    log.debug("Checkmated by {} at {}", piece, piecePosition);
                     return true;
                 }
             }
         }
         return false;
     }
+
+    public boolean isCheckmated(Board board, boolean isRed) {
+        if (!isInCheck(board, isRed)) {
+            return false;
+        }
+
+        for (int row = 0; row < Board.ROW; row++) {
+            for (int col = 0; col < Board.COL; col++) {
+                Piece piece = board.getArray()[row][col];
+                if (piece == null || piece.isRed() != isRed) continue;
+
+                Position fromPos = new Position(row, col);
+                for (int toRow = 0; toRow < Board.ROW; toRow++) {
+                    for (int toCol = 0; toCol < Board.COL; toCol++) {
+                        Position toPos = new Position(toRow, toCol);
+
+                        if (piece.isValidMove(board, fromPos, toPos)) {
+                            Board clonedBoard = board.clonedBoard();
+                            clonedBoard.movePiece(fromPos, toPos);
+
+                            if (isInCheck(clonedBoard, isRed)) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
 }
