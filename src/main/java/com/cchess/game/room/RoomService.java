@@ -1,5 +1,7 @@
 package com.cchess.game.room;
 
+import com.cchess.game.cchess.base.Board;
+import com.cchess.game.cchess.base.Position;
 import com.cchess.game.cchess.matches.*;
 import com.cchess.game.exception.BadRequestException;
 import com.cchess.game.exception.NotFoundException;
@@ -8,6 +10,7 @@ import com.cchess.game.user.UserService;
 import com.cchess.game.ws.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -239,6 +242,47 @@ public class RoomService {
         return roomMapper.toDto(room);
     }
 
+    public String makeRealMove(String roomId, MoveRequest moveRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        RoomManager roomManager = findRoomManagerByRoomId(roomId);
+        if (roomManager == null || roomManager.room() == null) {
+            throw new NotFoundException("Room not found");
+        }
+
+        UserDto userDto = roomManager.room().getPlayers().stream()
+                .filter(p -> p.getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Player not found"));
+
+        GameState gameState = roomManager.room().getGameState();
+        Player player = gameState.findCurrentPlayerByUsername(userDto.getUsername());
+        Player nextPlayer = gameState.getOtherPlayer();
+
+        Position from = moveRequest.getFrom();
+        Position to = moveRequest.getTo();
+
+        roomManager.makeMove(player, from, to);
+        gameState.setBoard(roomManager.room().getGameState().getBoard());
+
+        messageService.notifyNewMove(roomId, from, to);
+
+        if (roomMap.get(roomId).getStatus() == RoomStatus.END) {
+            gameHistoryCache.updateGameHistoryPostMatch(roomId, player, nextPlayer, GameOverReason.SUCCESSFUL_CHECKMATE, false);
+            userService.adjustEloRating(player.getUsername(), nextPlayer.getUsername());
+            matchService.createAndSaveMatch(roomId);
+            Board board = roomManager.room().getGameState().getBoard();
+
+            resetRoom(roomId);
+            return board.toString();
+        }
+
+        startAndStopTimer(player.getUsername(), nextPlayer.getUsername(), roomId);
+
+        Board board = roomManager.room().getGameState().getBoard();
+        messageService.notifyNewBoard(roomId, board);
+        return board.toString();
+    }
+
     public synchronized void handleDrawResponse(String roomId, Boolean isAccept, String username) {
         DrawResponse drawResponse = DrawResponse.builder()
                 .username(username)
@@ -341,6 +385,13 @@ public class RoomService {
     }
 
     private synchronized void resetRoom(String roomId) {
+        if (playerTimers.containsKey(roomId)) {
+            for (ScheduledFuture<?> task : playerTimers.get(roomId).values()) {
+                task.cancel(false);
+            }
+            playerTimers.remove(roomId);
+        }
+
         Room roomReset = roomMap.get(roomId);
         roomReset.setUpdatedAt(LocalDateTime.now());
         roomReset.setStatus(RoomStatus.OPEN);

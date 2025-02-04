@@ -2,7 +2,6 @@ package com.cchess.game.room;
 
 import com.cchess.game.cchess.matches.DrawRequest;
 import com.cchess.game.cchess.matches.DrawResponse;
-import com.cchess.game.cchess.matches.GameService;
 import com.cchess.game.user.User;
 import com.cchess.game.user.UserDto;
 import com.cchess.game.user.UserMapper;
@@ -22,7 +21,6 @@ public class RoomController implements RoomResource {
     private final UserService userService;
     private final UserMapper userMapper;
     private final RoomService roomService;
-    private final GameService gameService;
 
     @Override
     public RoomDto joinRoom() {
@@ -75,7 +73,7 @@ public class RoomController implements RoomResource {
 
     @Override
     public String makeMove(String roomId, MoveRequest moveRequest) {
-        return gameService.makeMove(roomId, moveRequest);
+        return roomService.makeRealMove(roomId, moveRequest);
     }
 
     @Override
