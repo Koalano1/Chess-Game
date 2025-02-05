@@ -16,4 +16,5 @@ public class Player {
 
     @Builder.Default
     private Boolean isReady = Boolean.FALSE;
+
 }
