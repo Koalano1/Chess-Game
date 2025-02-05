@@ -26,28 +26,21 @@ public class Chariot extends Piece {
         int minCol = Math.min(colFrom, colTo);
 
         if (rowFrom == rowTo) {
-            for (int col = minCol + 1; col <= maxCol - 1; col++) {
-                if (board.getArray()[rowFrom][col] != null) {
-                    return false;
-                }
-            }
-            if (pieceAtTo == null) {
-                return true;
-            }
-            return hasDifferentColor(pieceAtTo);
+            return isPathClearAndValid(board, rowFrom, minCol, maxCol, true, pieceAtTo);
         }
         if (colFrom == colTo) {
-            for (int row = minRow + 1; row <= maxRow - 1; row++) {
-                if (board.getArray()[row][colFrom] != null) {
-                    return false;
-                }
-            }
-            if (pieceAtTo == null) {
-                return true;
-            }
-            return hasDifferentColor(pieceAtTo);
+            return isPathClearAndValid(board, colFrom, minRow, maxRow, false, pieceAtTo);
         }
         return false;
+    }
+
+    private boolean isPathClearAndValid(Board board, int fixed, int start, int end, boolean isRowFixed, Piece pieceAtTo) {
+        for (int i = start + 1; i <= end - 1; i++) {
+            if ((isRowFixed ? board.getArray()[fixed][i] : board.getArray()[i][fixed]) != null) {
+                return false;
+            }
+        }
+        return pieceAtTo == null || hasDifferentColor(pieceAtTo);
     }
 
 }

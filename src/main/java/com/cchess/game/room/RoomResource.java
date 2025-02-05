@@ -1,34 +1,49 @@
 package com.cchess.game.room;
 
-import com.cchess.game.cchess.Player;
-import com.cchess.game.cchess.base.Board;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.cchess.game.cchess.matches.DrawRequest;
+import com.cchess.game.cchess.matches.DrawResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/room")
 public interface RoomResource {
 
-    @MessageMapping("/join")
-    @SendTo("/topic/room/{roomId}")
-    Room join(@DestinationVariable String roomId,
-              Player player
-    );
+    @GetMapping(value = "/join")
+    @ResponseStatus(HttpStatus.OK)
+    RoomDto joinRoom();
 
-    @MessageMapping("/move")
-    @SendTo("/topic/room/{roomId}")
-    Board makeMove(@DestinationVariable String roomId,
-                          @Payload MoveRequest moveRequest
+    @GetMapping(value = "/{roomId}/join")
+    @ResponseStatus(HttpStatus.OK)
+    RoomDto joinSpecificRoom(@PathVariable String roomId);
 
-    );
+    @GetMapping(value = "/{roomId}/leave")
+    @ResponseStatus(HttpStatus.OK)
+    Boolean leave(@PathVariable String roomId);
 
-    @PostMapping("/create")
-    Room createRoom(String name,
-                    String password,
-                    Long createdBy
-    );
+    @GetMapping(value = "/available")
+    @ResponseStatus(HttpStatus.OK)
+    List<RoomDto> availableRooms();
+
+    @GetMapping(value = "/{roomId}/ready")
+    @ResponseStatus(HttpStatus.OK)
+    void ready(@PathVariable String roomId);
+
+    @PostMapping(value = "/{roomId}/move")
+    @ResponseStatus(HttpStatus.OK)
+    String makeMove(@PathVariable String roomId, @RequestBody MoveRequest moveRequest);
+
+    @GetMapping(value = "/{roomId}/draw-request")
+    @ResponseStatus(HttpStatus.OK)
+    DrawRequest handleDrawRequest(@PathVariable String roomId);
+
+    @PostMapping(value = "/{roomId}/draw-response")
+    @ResponseStatus(HttpStatus.OK)
+    void handleDrawResponse(@PathVariable String roomId, @RequestBody DrawResponse drawResponse);
+
+    @GetMapping(value = "/{roomId}/surrender-request")
+    @ResponseStatus(HttpStatus.OK)
+    void handlerSurrenderRequest(@PathVariable String roomId);
 
 }

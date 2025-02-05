@@ -1,68 +1,99 @@
 package com.cchess.game.room;
 
-import com.cchess.game.cchess.GameManager;
-import com.cchess.game.cchess.Player;
-import com.cchess.game.cchess.base.Board;
-import com.cchess.game.exception.BadRequestException;
+import com.cchess.game.cchess.matches.DrawRequest;
+import com.cchess.game.cchess.matches.DrawResponse;
+import com.cchess.game.user.User;
+import com.cchess.game.user.UserDto;
+import com.cchess.game.user.UserMapper;
+import com.cchess.game.user.UserService;
+import com.cchess.game.ws.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 public class RoomController implements RoomResource {
 
-    private final Map<String, GameManager> game = new ConcurrentHashMap<>();
+    private final MessageService messageService;
+    private final UserService userService;
+    private final UserMapper userMapper;
     private final RoomService roomService;
 
     @Override
-    public Room join(String roomId, Player player) {
-        Room room = roomService.findRoomById(roomId);
+    public RoomDto joinRoom() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByUsername(username);
+        UserDto userDto = userMapper.toDto(user);
 
-        if (room == null || room.isFull()) {
-            throw new BadRequestException("Room is full");
-        }
+        RoomDto roomDto = roomService.addPlayerToRoom(userDto);
+        messageService.notifyPlayerJoin(roomDto.getRoomId(), userDto);
 
-        if (room.getPlayer1() == null) {
-            room.setPlayer1(player);
-        } else {
-            room.setPlayer2(player);
-            room.setStatus(RoomStatus.PLAYING);
-            game.put(roomId, new GameManager(room));
-        }
-        return room;
+        return roomDto;
     }
 
     @Override
-    public Board makeMove(String roomId, MoveRequest moveRequest) {
-        GameManager gameManager = game.get(roomId);
-        if (gameManager == null) {
-            throw new BadRequestException("Room not found");
+    public Boolean leave(String roomId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByUsername(username);
+        UserDto userDto = userMapper.toDto(user);
+
+        boolean isLeave = roomService.removePlayerFromRoom(userDto, roomId);
+        if (isLeave) {
+            messageService.notifyPlayerLeave(roomId, userDto);
         }
 
-        boolean success = gameManager.makeMove(moveRequest.getPlayer(), moveRequest.getFrom(), moveRequest.getTo());
-        if (!success) {
-            throw new BadRequestException("Invalid move");
-        }
-
-        return gameManager.room().getBoard();
+        return isLeave;
     }
 
     @Override
-    public Room createRoom(String name, String password, Long createdBy) {
-        Room room = new Room();
-        room.setId(String.valueOf(System.currentTimeMillis()));
-        room.setName(name);
-        room.setPassword(password);
+    public RoomDto joinSpecificRoom(String roomId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByUsername(username);
+        UserDto userDto = userMapper.toDto(user);
 
-        room.setCreatedBy(createdBy);
-        room.setCreatedAt(LocalDateTime.now());
+        RoomDto roomDto = roomService.playerJoinRoom(userDto, roomId);
+        messageService.notifyPlayerJoin(roomId, userDto);
 
-        roomService.addRoom(room);
-        return room;
+        return roomDto;
+    }
+
+    @Override
+    public List<RoomDto> availableRooms() {
+        return roomService.getAvailableRooms();
+    }
+
+    @Override
+    public void ready(String roomId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        roomService.updatePlayerReadyStatus(username, roomId);
+    }
+
+    @Override
+    public String makeMove(String roomId, MoveRequest moveRequest) {
+        return roomService.makeRealMove(roomId, moveRequest);
+    }
+
+    @Override
+    public DrawRequest handleDrawRequest(String roomId) {
+        DrawRequest drawRequest = new DrawRequest();
+        drawRequest.setUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        return drawRequest;
+    }
+
+    @Override
+    public void handleDrawResponse(String roomId, DrawResponse drawResponse) {
+        boolean isAccept = drawResponse.getIsAgree();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        roomService.handleDrawResponse(roomId, isAccept, username);
+    }
+
+    @Override
+    public void handlerSurrenderRequest(String roomId) {
+        String loserUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        roomService.handleSurrenderRequest(roomId, loserUsername);
     }
 
 }

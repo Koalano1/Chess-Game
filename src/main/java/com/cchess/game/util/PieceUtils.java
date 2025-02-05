@@ -29,17 +29,4 @@ public class PieceUtils {
         return new Position();
     }
 
-    public static Piece getPieceInstanceFromName(String name, boolean isRed) {
-        return switch (name) {
-            case "GE" -> new General(isRed);
-            case "AD" -> new Advisor(isRed);
-            case "EL" -> new Elephant(isRed);
-            case "CH" -> new Chariot(isRed);
-            case "HO" -> new Horse(isRed);
-            case "CA" -> new Cannon(isRed);
-            case "SO" -> new Soldier(isRed);
-            default -> throw new IllegalArgumentException("Invalid piece name: " + name);
-        };
-    }
-
 }

@@ -1,23 +1,30 @@
 package com.cchess.game.room;
 
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.cchess.game.cchess.Player;
-import com.cchess.game.cchess.base.Board;
+import com.cchess.game.cchess.matches.GameState;
+import com.cchess.game.user.UserDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Room {
 
     private String id;
 
     private String name;
 
-    @JSONField(serialize = false)
-    private String password;
+//    @JSONField(serialize = false)
+//    private String password;
 
-    private Long createdBy;
+    private String createdBy;
 
     private LocalDateTime createdAt;
 
@@ -26,19 +33,12 @@ public class Room {
 
     private RoomStatus status = RoomStatus.OPEN;
 
-    private Player player1;
-    private Player player2;
+    private Set<UserDto> players;
 
-    private Player currentPlayer;
-
-    private Board board = new Board();
+    private GameState gameState;
 
     public boolean isFull() {
-        return player1 != null && player2 != null;
-    }
-
-    public Player getCurrentPlayer() {
-        return (status == RoomStatus.PLAYING && player1 != null && player1.getIsRed() ? player1 : player2);
+        return players.size() == 2;
     }
 
 }

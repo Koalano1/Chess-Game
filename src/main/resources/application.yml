@@ -33,12 +33,12 @@ security:
 server:
   port: 8081
 
-logging:
-  level:
-    org:
-      springframework:
-        web:
-          socket:
-            DEBUG
-        messaging:
-          DEBUG
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        web:
+#          socket:
+#            DEBUG
+#        messaging:
+#          DEBUG

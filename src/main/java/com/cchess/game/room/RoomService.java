@@ -1,35 +1,408 @@
 package com.cchess.game.room;
 
+import com.cchess.game.cchess.base.Board;
+import com.cchess.game.cchess.base.Position;
+import com.cchess.game.cchess.matches.*;
 import com.cchess.game.exception.BadRequestException;
+import com.cchess.game.exception.NotFoundException;
+import com.cchess.game.user.UserDto;
+import com.cchess.game.user.UserService;
+import com.cchess.game.ws.MessageService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.*;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class RoomService {
 
-    private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private final Map<String, Room> roomMap = new ConcurrentHashMap<>();
+    private final Map<String, RoomManager> games = new ConcurrentHashMap<>();
+
+    private final RoomMapper roomMapper;
+    private final MessageService messageService;
+    private final MatchService matchService;
+    private final GameHistoryCache gameHistoryCache;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+    private final Map<String, Runnable> countdownTasks = new ConcurrentHashMap<>();
+
+    private final Map<String, Map<String, ScheduledFuture<?>>> playerTimers = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, Integer>> playerTimeRemaining = new ConcurrentHashMap<>();
+    private final UserService userService;
+
+    public RoomDto addPlayerToRoom(UserDto userDto) {
+        synchronized (roomMap) {
+            for (Room room : roomMap.values()) {
+
+                Set<UserDto> players = room.getPlayers();
+                List<UserDto> playerList = new ArrayList<>(players);
+
+                for (UserDto user : playerList) {
+                    if (user.getUsername().equals(userDto.getUsername())) {
+                        playerList.remove(user);
+                        playerList.add(userDto);
+                        return roomMapper.toDto(room);
+                    }
+                }
+
+                if (players.size() < 2) {
+                    players.add(userDto);
+                    room.setPlayers(players);
+
+                    GameState currentGameState = room.getGameState();
+                    currentGameState.setOtherPlayer(
+                            Player.builder()
+                                    .username(userDto.getUsername())
+                                    .build());
+
+                    room.setGameState(currentGameState);
+                    roomMap.put(room.getId(), room);
+
+                    return roomMapper.toDto(room);
+                }
+            }
+        }
+
+        Room room = createRoom(userDto);
+        room.getPlayers().add(userDto);
+
+        synchronized (roomMap) {
+            roomMap.put(room.getId(), room);
+        }
+
+        synchronized (games) {
+            games.put(room.getId(), new RoomManager(room));
+        }
+
+        return roomMapper.toDto(room);
+    }
+
+    public void updatePlayerReadyStatus(String username, String roomId) {
+        Room room = roomMap.get(roomId);
+        GameState gameState = room.getGameState();
+
+        Boolean newStatus = gameState.updatePlayerReadyStatus(username);
+        messageService.notifyPlayerReady(roomId, username, newStatus);
+
+        if (gameState.bothPlayersReady()) {
+            room.setStatus(RoomStatus.BEGINNING);
+            startCountdown(roomId);
+        } else {
+            stopCountDown(roomId);
+        }
+    }
+
+    private void startCountdown(String roomId) {
+        stopCountDown(roomId);
+
+        Runnable countdownTask = new Runnable() {
+            private int timeLeft = 10;
+
+            @Override
+            public void run() {
+                if (timeLeft > 0) {
+                    messageService.notifyCountdown(roomId, timeLeft);
+                    timeLeft--;
+                } else {
+                    stopCountDown(roomId);
+                    start(roomId);
+                }
+            }
+        };
+
+        ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(countdownTask, 0, 1, TimeUnit.SECONDS);
+        countdownTasks.put(roomId, () -> scheduledTask.cancel(false));
+    }
+
+    private void stopCountDown(String roomId) {
+        Runnable task = countdownTasks.get(roomId);
+        if (task != null) {
+//            scheduler.shutdownNow();
+            task.run();
+            countdownTasks.remove(roomId);
+//            messageService.notifyCountdownStopped(roomId);
+        }
+    }
+
+    public void start(String roomId) {
+        Room room = findRoomById(roomId);
+
+        GameState gameState = room.getGameState();
+
+        Random random = new Random();
+        if (random.nextInt(10) % 2 == 0) {
+
+            Player currentPlayer = gameState.getCurrentPlayer();
+            currentPlayer.setIsRed(true);
+            Player otherPlayer = gameState.getOtherPlayer();
+            otherPlayer.setIsRed(false);
+        } else {
+            Player otherPlayer = gameState.getOtherPlayer();
+            otherPlayer.setIsRed(true);
+            Player oldCurrentPlayer = gameState.getCurrentPlayer();
+            oldCurrentPlayer.setIsRed(false);
+
+            gameState.setCurrentPlayer(otherPlayer);
+            gameState.setOtherPlayer(oldCurrentPlayer);
+        }
+
+        messageService.notifyGameStarted(roomId);
+
+        // Create new gamer history
+        gameHistoryCache.addNewGameHistoryPreMatch(roomId, gameState.getCurrentPlayer(), gameState.getOtherPlayer());
+
+        room.setStatus(RoomStatus.PLAYING);
+    }
+
+    private Room createRoom(UserDto userDto) {
+        Player player = Player.builder().username(userDto.getUsername()).build();
+        GameState initialGameState = GameState.builder()
+                .currentPlayer(player)
+                .otherPlayer(null)
+                .build();
+        return Room.builder()
+                .id(UUID.randomUUID().toString())
+                .name("Room " + roomMap.size())
+                .createdBy(userDto.getUsername())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .status(RoomStatus.OPEN)
+                .gameState(initialGameState)
+                .players(new HashSet<>())
+                .build();
+    }
 
     public Room findRoomById(String roomId) {
-        Room room = rooms.get(roomId);
-        if (room == null) {
-            throw new BadRequestException("Room not found");
+        synchronized (roomMap) {
+            Room room = roomMap.get(roomId);
+            if (room == null) throw new NotFoundException("Room not found");
+
+            return room;
         }
-        return room;
     }
 
-    public void addRoom(Room room) {
-        rooms.put(room.getId(), room);
+    public RoomManager findRoomManagerByRoomId(String roomId) {
+        synchronized (games) {
+            RoomManager roomManager = games.get(roomId);
+            if (roomManager == null) throw new NotFoundException("Room not found");
+
+            return roomManager;
+        }
     }
 
-    public void removeRoom(String roomId) {
-        rooms.remove(roomId);
+    public synchronized boolean removePlayerFromRoom(UserDto userDto, String roomId) {
+        Room room = roomMap.get(roomId);
+
+        GameState currentGameState = room.getGameState();
+        if (currentGameState != null) {
+            if (currentGameState.getCurrentPlayer().getUsername().equals(userDto.getUsername())) {
+                currentGameState.setCurrentPlayer(null);
+            } else if (currentGameState.getOtherPlayer().getUsername().equals(userDto.getUsername())) {
+                currentGameState.setOtherPlayer(null);
+            }
+        }
+
+        Set<UserDto> currentUsersInRoom = room.getPlayers();
+        currentUsersInRoom.remove(userDto);
+
+        if (currentUsersInRoom.isEmpty()) {
+            roomMap.remove(roomId);
+            return true;
+        }
+
+        room.setGameState(currentGameState);
+        roomMap.put(roomId, room);
+        return true;
     }
 
-    public Collection<Room> getAllRooms() {
-        return rooms.values();
+    public List<RoomDto> getAvailableRooms() {
+        synchronized (roomMap) {
+            List<RoomDto> availableRooms = new ArrayList<>();
+            for (Room room : roomMap.values())
+                availableRooms.add(roomMapper.toDto(room));
+            return availableRooms;
+        }
     }
 
+    public synchronized RoomDto playerJoinRoom(UserDto userDto, String roomId) {
+        Room room = roomMap.get(roomId);
+        if (room == null) throw new NotFoundException("Room not found");
+
+        Set<UserDto> players = room.getPlayers();
+        if (players.size() == 2) throw new BadRequestException("Room is full");
+
+        players.add(userDto);
+        return roomMapper.toDto(room);
+    }
+
+    public String makeRealMove(String roomId, MoveRequest moveRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        RoomManager roomManager = findRoomManagerByRoomId(roomId);
+        if (roomManager == null || roomManager.room() == null) {
+            throw new NotFoundException("Room not found");
+        }
+
+        UserDto userDto = roomManager.room().getPlayers().stream()
+                .filter(p -> p.getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Player not found"));
+
+        GameState gameState = roomManager.room().getGameState();
+        Player player = gameState.findCurrentPlayerByUsername(userDto.getUsername());
+        Player nextPlayer = gameState.getOtherPlayer();
+
+        Position from = moveRequest.getFrom();
+        Position to = moveRequest.getTo();
+
+        roomManager.makeMove(player, from, to);
+        gameState.setBoard(roomManager.room().getGameState().getBoard());
+
+        messageService.notifyNewMove(roomId, from, to);
+
+        if (roomMap.get(roomId).getStatus() == RoomStatus.END) {
+            gameHistoryCache.updateGameHistoryPostMatch(roomId, player, nextPlayer, GameOverReason.SUCCESSFUL_CHECKMATE, false);
+            userService.adjustEloRating(player.getUsername(), nextPlayer.getUsername());
+            matchService.createAndSaveMatch(roomId);
+            Board board = roomManager.room().getGameState().getBoard();
+
+            resetRoom(roomId);
+            return board.toString();
+        }
+
+        startAndStopTimer(player.getUsername(), nextPlayer.getUsername(), roomId);
+
+        Board board = roomManager.room().getGameState().getBoard();
+        messageService.notifyNewBoard(roomId, board);
+        return board.toString();
+    }
+
+    public synchronized void handleDrawResponse(String roomId, Boolean isAccept, String username) {
+        DrawResponse drawResponse = DrawResponse.builder()
+                .username(username)
+                .isAgree(isAccept)
+                .build();
+        messageService.notifyDrawResponse(roomId, drawResponse);
+
+        // Update game history
+        gameHistoryCache.updateGameHistoryPostMatch(roomId, null, null, GameOverReason.DRAW, true);
+        matchService.createAndSaveMatch(roomId);
+
+        if (isAccept) {
+            resetRoom(roomId);
+        }
+    }
+
+    public void handleSurrenderRequest(String roomId, String loserUsername) {
+        messageService.notifySurrender(roomId, loserUsername);
+
+        GameState gameState = roomMap.get(roomId).getGameState();
+        Player loser = gameState.getCurrentPlayer().getUsername().equals(loserUsername)
+                ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
+        Player winner = loser.equals(gameState.getCurrentPlayer())
+                ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
+
+        gameHistoryCache.updateGameHistoryPostMatch(roomId, winner, loser, GameOverReason.RESIGNATION, false);
+        matchService.createAndSaveMatch(roomId);
+
+        resetRoom(roomId);
+    }
+
+    public void handleTimeOver(String roomId, String playerUsername) {
+        Room room = roomMap.get(roomId);
+        GameState gameState = room.getGameState();
+
+        Player loser = gameState.getCurrentPlayer().getUsername().equals(playerUsername)
+                ? gameState.getCurrentPlayer() : gameState.getOtherPlayer();
+        Player winner = loser.equals(gameState.getCurrentPlayer())
+                ? gameState.getOtherPlayer() : gameState.getCurrentPlayer();
+
+        messageService.notifyGameEnded(roomId);
+        gameHistoryCache.updateGameHistoryPostMatch(roomId, winner, loser, GameOverReason.TIME_UP, false);
+
+        userService.adjustEloRating(winner.getUsername(), loser.getUsername());
+
+        matchService.createAndSaveMatch(roomId);
+
+    }
+
+    private synchronized void startPlayerTimer(String roomId, String playerUsername) {
+        stopPlayerTimer(roomId, playerUsername);
+
+        int initialTimeLeft = playerTimeRemaining
+                .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
+                .getOrDefault(playerUsername, 900);
+
+        Runnable playerTimerTask = new Runnable() {
+            private int timeLeft = initialTimeLeft;
+
+            @Override
+            public void run() {
+                if (timeLeft > 0) {
+                    int minutes = timeLeft / 60;
+                    int seconds = timeLeft % 60;
+                    String formattedTime = String.format("%02d:%02d", minutes, seconds);
+
+                    messageService.notifyGameCountdown(roomId, playerUsername + ": " + formattedTime);
+                    timeLeft--;
+
+                    playerTimeRemaining.get(roomId).put(playerUsername, timeLeft);
+                } else {
+                    stopPlayerTimer(roomId, playerUsername);
+                    handleTimeOver(roomId, playerUsername);
+                }
+            }
+        };
+
+        ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(playerTimerTask, 0, 1, TimeUnit.SECONDS);
+        playerTimers
+                .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
+                .put(playerUsername, scheduledTask);
+    }
+
+    private void stopPlayerTimer(String roomId, String playerUsername) {
+        Map<String, ScheduledFuture<?>> playerTimersForRoom = playerTimers.get(roomId);
+        if (playerTimersForRoom != null) {
+            ScheduledFuture<?> task = playerTimersForRoom.get(playerUsername);
+            if (task != null) {
+                task.cancel(false);
+                playerTimersForRoom.remove(playerUsername);
+            }
+        }
+    }
+
+    public synchronized void startAndStopTimer(String usernameForStoppingTimer,
+                                               String usernameForStartingTimer,
+                                               String roomId) {
+        startPlayerTimer(roomId, usernameForStartingTimer);
+        stopPlayerTimer(roomId, usernameForStoppingTimer);
+    }
+
+    private synchronized void resetRoom(String roomId) {
+        if (playerTimers.containsKey(roomId)) {
+            for (ScheduledFuture<?> task : playerTimers.get(roomId).values()) {
+                task.cancel(false);
+            }
+            playerTimers.remove(roomId);
+        }
+
+        Room roomReset = roomMap.get(roomId);
+        roomReset.setUpdatedAt(LocalDateTime.now());
+        roomReset.setStatus(RoomStatus.OPEN);
+        roomReset.setPlayers(new HashSet<>());
+        roomReset.setGameState(
+                GameState.builder()
+                        .currentPlayer(null)
+                        .otherPlayer(null)
+                        .build()
+        );
+
+        roomMap.put(roomId, roomReset);
+    }
 }
